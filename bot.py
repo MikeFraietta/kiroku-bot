@@ -27,30 +27,38 @@ scheduler = AsyncIOScheduler()
 
 @bot.event
 async def on_ready():
-      logger.info(f'{bot.user} has connected to Discord!')
-      if not scheduler.running:
-                scheduler.start()
-            logger.info('Scheduler started - weekly event posts enabled')
+          logger.info(f'{bot.user} has connected to Discord!')
+          if not scheduler.running:
+                        scheduler.start()
+                        logger.info('Scheduler started - weekly event posts enabled')
+                        # Schedule weekly event posts for Monday at 9 AM UTC
+                        scheduler.add_job(
+                            post_events,
+                            CronTrigger(day_of_week=0, hour=9, minute=0),
+                            id='weekly_events',
+                            replace_existing=True
+                        )
+                        logger.info('Weekly event job scheduled')
 
-async def post_events():
-      """Post weekly events to the configured channel"""
-    try:
-              channel = bot.get_channel(CHANNEL_ID)
-              if channel is None:
-                            logger.error(f'Channel {CHANNEL_ID} not found!')
-                            return
+      async def post_events():
+                """Post weekly events to the configured channel"""
+                try:
+                              channel = bot.get_channel(CHANNEL_ID)
+                              if channel is None:
+                                                logger.error(f'Channel {CHANNEL_ID} not found!')
+                                                return
 
-              # Create event embed
-              embed = discord.Embed(
-                  title='📅 Weekly Event Update',
-                  description='Here are this week\'s events for enXross DAO:',
-                  color=discord.Color.gold()
-              )
+                              # Create event embed
+                              embed = discord.Embed(
+                                  title='📅 Weekly Event Update',
+                                  description='Here are this week\'s events for enXross DAO:',
+                                  color=discord.Color.gold()
+                              )
 
         embed.add_field(
-                      name='Coming Soon',
-                      value='Event information will be posted here weekly.',
-                      inline=False
+                          name='Coming Soon',
+                          value='Event information will be posted here weekly.',
+                          inline=False
         )
 
         embed.set_footer(text='Posted by Kiroku Bot')
@@ -60,26 +68,14 @@ async def post_events():
 except Exception as e:
         logger.error(f'Error posting events: {e}')
 
-@bot.event
-async def on_ready_scheduler():
-      """Called when bot is ready to start scheduling"""
-    # Schedule weekly event posts for Monday at 9 AM UTC
-    scheduler.add_job(
-              post_events,
-              CronTrigger(day_of_week=0, hour=9, minute=0),
-              id='weekly_events',
-              replace_existing=True
-    )
-    logger.info('Weekly event job scheduled')
-
 def run_bot():
-      """Start the bot"""
-    if not DISCORD_TOKEN:
-              raise ValueError('DISCORD_TOKEN environment variable not set!')
-          if not CHANNEL_ID:
-                    raise ValueError('CHANNEL_ID environment variable not set!')
+          """Start the bot"""
+          if not DISCORD_TOKEN:
+                        raise ValueError('DISCORD_TOKEN environment variable not set!')
+                    if not CHANNEL_ID:
+                                  raise ValueError('CHANNEL_ID environment variable not set!')
 
     bot.run(DISCORD_TOKEN)
 
 if __name__ == '__main__':
-      run_bot()
+          run_bot()
