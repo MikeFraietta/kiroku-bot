@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Received - enXross</title>
+    <meta name="description" content="Thanks for your submission to enXross.">
+    <meta name="robots" content="noindex,follow">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script defer src="analytics.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(circle at top, rgba(0, 255, 255, 0.2), #0a0a0a 55%);
+            color: #fff;
+            padding: 24px;
+        }
+        .card {
+            width: 100%;
+            max-width: 640px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            padding: 32px 26px;
+        }
+        h1 { font-size: 2rem; margin-bottom: 8px; }
+        p { color: rgba(255, 255, 255, 0.72); line-height: 1.7; }
+        .subtext { margin-top: 14px; margin-bottom: 20px; }
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 10px;
+            padding: 11px 18px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            border: 1px solid transparent;
+        }
+        .btn-primary {
+            background: #5865F2;
+            color: #fff;
+        }
+        .btn-primary:hover { background: #4752C4; }
+        .btn-secondary {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .btn-secondary:hover {
+            color: #00ffff;
+            border-color: #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1 id="thanks-title">Thank you.</h1>
+        <p id="thanks-body">Your submission was received. Our team will follow up with next steps.</p>
+        <p class="subtext">If you have not joined Discord yet, use the button below so you can receive updates in real time.</p>
+        <div class="actions">
+            <a class="btn btn-primary" href="join-discord.html?src=thanks" target="_blank" rel="noopener noreferrer">Join Discord</a>
+            <a class="btn btn-secondary" href="index.html">Return to Home</a>
+        </div>
+    </main>
+
+    <script>
+        (function () {
+            const type = new URLSearchParams(window.location.search).get("type");
+            const title = document.getElementById("thanks-title");
+            const body = document.getElementById("thanks-body");
+
+            if (type === "sponsor") {
+                title.textContent = "Sponsor inquiry received.";
+                body.textContent = "Thanks for your interest in sponsoring enXross. We will follow up with a tailored response and call options.";
+                if (window.enxrossTrack) {
+                    window.enxrossTrack("sponsor_thank_you_view", { page_path: window.location.pathname });
+                }
+                return;
+            }
+
+            if (type === "cohort") {
+                title.textContent = "Cohort application received.";
+                body.textContent = "Thanks for applying to the next enXross cohort. We will share eligibility and timeline updates soon.";
+                if (window.enxrossTrack) {
+                    window.enxrossTrack("cohort_thank_you_view", { page_path: window.location.pathname });
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

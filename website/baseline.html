@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>enXross DAO Baseline Survey</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+  <script defer src="analytics.js"></script>
+  <style>
+    /* Global Styles & Nav (Matched to other pages) */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+        color: #ffffff;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    /* Japanese Font Support */
+    body.jp-mode {
+        font-family: 'Noto Sans JP', 'Poppins', sans-serif;
+    }
+
+    /* Language Toggling Utility Classes */
+    .lang-jp { display: none; }
+    body.jp-mode .lang-en { display: none; }
+    body.jp-mode .lang-jp { display: block; }
+    
+    /* Inline toggling */
+    body.jp-mode span.lang-en { display: none; }
+    body.jp-mode span.lang-jp { display: inline; }
+    span.lang-jp { display: none; }
+
+    .stars {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Navbar Styles */
+    .navbar {
+        position: sticky;
+        top: 0;
+        background: rgba(10, 10, 10, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid rgba(0, 255, 255, 0.2);
+        padding: 1rem 0;
+        z-index: 1000;
+    }
+
+    .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nav-logos {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .logo-main {
+        height: 40px;
+        width: auto;
+    }
+
+    .nav-menu {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .nav-menu a {
+        color: #00ffff;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s;
+    }
+
+    .nav-menu a:hover {
+        color: #ffffff;
+    }
+
+    /* Language Toggle Button */
+    .lang-btn {
+        background: transparent;
+        border: 1px solid #00ffff;
+        color: #00ffff;
+        padding: 5px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-left: 10px;
+    }
+
+    .lang-btn:hover {
+        background: rgba(0, 255, 255, 0.2);
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+    }
+    
+    /* Responsive Nav */
+    @media (max-width: 768px) {
+        .nav-menu { gap: 1rem; font-size: 0.8rem; }
+    }
+
+    /* Baseline Specific Styles (Preserved & Adapted) */
+    :root{
+      --bg: transparent; /* Changed to transparent to blend with body gradient */
+      --panel: rgba(21, 26, 34, 0.8);
+      --panel-2: rgba(16, 20, 27, 0.9);
+      --text: #e6e9ee;
+      --muted: #a8b0bd;
+      --accent-1: #62f5a3;
+      --accent-2: #7aa8ff;
+      --accent-3: #ffd281;
+      --ring: rgba(122,168,255,.45);
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --grad: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+    }
+
+    .enxross-baseline {
+      /* Adjusted to overlay nicely on main background */
+      background: radial-gradient(1200px 600px at 10% 0%, rgba(98,245,163,.05), transparent 60%),
+                  radial-gradient(1000px 500px at 90% 10%, rgba(122,168,255,.05), transparent 60%);
+      color: var(--text);
+      padding: clamp(28px, 5vw, 56px) 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .enx-container{
+      max-width: 1024px;
+      margin: 0 auto;
+    }
+
+    .enx-header h2{
+      font-size: clamp(28px, 3.8vw, 40px);
+      line-height: 1.1;
+      margin: 0 0 8px 0;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .enx-header{
+      margin-bottom: 20px;
+    }
+
+    .enx-tagline{
+      color: var(--muted);
+      font-size: clamp(15px, 2vw, 18px);
+      margin: 0;
+    }
+
+    .enx-grid{
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 0 0 20px 0;
+    }
+
+    .enx-grid .enx-card{
+      margin-bottom: 0;
+    }
+
+    .enx-card{
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius);
+      padding: clamp(16px, 2.4vw, 22px);
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      backdrop-filter: blur(5px);
+    }
+
+    .enx-card h3, .enx-card h4{
+      margin: 0 0 8px 0;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+
+    .enx-card h4{
+      font-size: 16px;
+      color: var(--accent-2);
+    }
+
+    .enx-card p{
+      margin: 0;
+      color: var(--text);
+      opacity: .92;
+      line-height: 1.6;
+    }
+
+    .enx-list{
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text);
+    }
+
+    .enx-list li{
+      margin: 6px 0;
+    }
+
+    .enx-intro-copy{
+      margin-bottom: 20px;
+    }
+
+    .enx-image-container{
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .enx-swimlanes-img{
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+
+    .enx-footer{
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .enx-cta-group{
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .enx-cta{
+      display: inline-block;
+      background: var(--grad);
+      color: #081218;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      box-shadow: 0 6px 18px rgba(122,168,255,.25);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .enx-cta-secondary{
+      background: transparent;
+      border: 2px solid var(--accent-2);
+      color: var(--accent-2);
+      box-shadow: 0 6px 18px rgba(122,168,255,.15);
+    }
+
+    .enx-cta:hover{ transform: translateY(-1px); box-shadow: 0 10px 24px rgba(122,168,255,.35); }
+    .enx-cta-secondary:hover{ box-shadow: 0 10px 24px rgba(122,168,255,.25); }
+    .enx-cta:focus{ outline: 3px solid var(--ring); outline-offset: 2px; border-radius: 12px; }
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .enx-grid{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logos">
+                <a href="index.html">
+                    <img src="images/enxross_logo.jpg" onerror="this.src='https://placehold.co/40x40/00ffff/000000?text=ENX'" alt="enXross DAO Logo" class="logo-main">
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li>
+                    <a href="index.html">
+                        <span class="lang-en">Home</span>
+                        <span class="lang-jp">ホーム</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="schedule.html">
+                        <span class="lang-en">Schedule</span>
+                        <span class="lang-jp">スケジュール</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="dao.html">
+                        <span class="lang-en">DAO</span>
+                        <span class="lang-jp">DAO</span>
+                    </a>
+                </li>
+                <li>
+                    <button id="lang-toggle" class="lang-btn">JP</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="enxross-baseline">
+      <div class="enx-container">
+        <header class="enx-header">
+          <h2>
+            <span class="lang-en">Welcome to the enXross DAO Baseline Survey</span>
+            <span class="lang-jp">enXross DAO ベースライン調査へようこそ</span>
+          </h2>
+          <p class="enx-tagline">
+            <span class="lang-en">We capture your starting point today and your six month target, then track visible progress during the program.</span>
+            <span class="lang-jp">現在のスタート地点と6ヶ月後の目標を記録し、プログラム期間中の可視化された進捗を追跡します。</span>
+          </p>
+        </header>
+
+        <section class="enx-card">
+          <h3>
+            <span class="lang-en">Why we are doing this</span>
+            <span class="lang-jp">実施の理由</span>
+          </h3>
+          <p>
+            <span class="lang-en">
+                Every startup begins at a different stage. Some have a working product. Others already have customers or funding.
+                The survey gives us a fair snapshot of where you are today and where you plan to be at the end of the residency.
+                It also lets mentors tailor support to your needs.
+            </span>
+            <span class="lang-jp">
+                すべてのスタートアップは異なる段階から始まります。すでに製品が稼働しているチームもあれば、顧客や資金を持っているチームもあります。この調査により、現在の立ち位置とレジデンシー終了時の目標地点を公平に把握することができます。また、メンターがニーズに合わせたサポートを提供するのにも役立ちます。
+            </span>
+          </p>
+        </section>
+
+        <section class="enx-card enx-intro">
+          <h3>
+            <span class="lang-en">Understanding the Swim Lanes</span>
+            <span class="lang-jp">スイムレーン（成長の軌道）を理解する</span>
+          </h3>
+          <p class="enx-intro-copy">
+            <span class="lang-en">
+                Growth happens in three lanes that must move together: <strong>Product</strong>, <strong>Customers</strong>, and <strong>Operations</strong>.
+                When one lane races ahead and the others lag, teams stall or fail. The goal is synchronized movement so progress in one lane
+                is reinforced by the others. That is how pilots become scalable businesses.
+            </span>
+            <span class="lang-jp">
+                成長は「<strong>プロダクト</strong>」「<strong>顧客</strong>」「<strong>オペレーション</strong>」という3つのレーンで同時に進行する必要があります。1つのレーンだけが先行し他が遅れると、チームは停滞または失敗します。目標は、1つのレーンでの進歩が他のレーンによって強化されるよう、同期して進むことです。これが、パイロットプロジェクトをスケーラブルなビジネスへと変える方法です。
+            </span>
+          </p>
+          <div class="enx-image-container">
+            <img src="swimlanes.png" onerror="this.src='https://placehold.co/800x400/151a22/00ffff?text=Swim+Lanes+Diagram'" alt="Swim lanes diagram showing Product, Customer, and Operations alignment" class="enx-swimlanes-img">
+          </div>
+        </section>
+
+        <section class="enx-grid">
+          <div class="enx-card">
+            <h4>
+                <span class="lang-en">Product</span>
+                <span class="lang-jp">プロダクト</span>
+            </h4>
+            <p>
+                <span class="lang-en">Product maturity, technology depth, and integration readiness.</span>
+                <span class="lang-jp">製品の成熟度、技術の深さ、統合の準備状況。</span>
+            </p>
+          </div>
+          <div class="enx-card">
+            <h4>
+                <span class="lang-en">Customers</span>
+                <span class="lang-jp">顧客</span>
+            </h4>
+            <p>
+                <span class="lang-en">Audience definition, pilots, traction, and retention.</span>
+                <span class="lang-jp">ターゲット定義、パイロット、トラクション、維持率。</span>
+            </p>
+          </div>
+          <div class="enx-card">
+            <h4>
+                <span class="lang-en">Operations</span>
+                <span class="lang-jp">オペレーション</span>
+            </h4>
+            <p>
+                <span class="lang-en">Team strength, process, finance, fundraising, and governance.</span>
+                <span class="lang-jp">チーム力、プロセス、財務、資金調達、ガバナンス。</span>
+            </p>
+          </div>
+        </section>
+
+        <section class="enx-card">
+          <h3>
+            <span class="lang-en">How it works</span>
+            <span class="lang-jp">仕組み</span>
+          </h3>
+          <ul class="enx-list">
+            <li>
+                <span class="lang-en">Five topics per swim lane.</span>
+                <span class="lang-jp">各スイムレーンにつき5つのトピック。</span>
+            </li>
+            <li>
+                <span class="lang-en">For each topic, rate your current status (0-10) and provide a qualitative summary.</span>
+                <span class="lang-jp">各トピックについて、現在の状況（0〜10）を評価し、定性的な要約を記述します。</span>
+            </li>
+            <li>
+                <span class="lang-en">You will also set a goal rating (0-10) for the end of the program.</span>
+                <span class="lang-jp">また、プログラム終了時の目標評価（0〜10）も設定します。</span>
+            </li>
+            <li>
+                <span class="lang-en">Lane averages are scaled to a 0 to 100 baseline for the dashboard.</span>
+                <span class="lang-jp">レーンの平均値は、ダッシュボード用に0〜100のベースラインにスケーリングされます。</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="enx-card">
+          <h3>
+            <span class="lang-en">During the program</span>
+            <span class="lang-jp">プログラム期間中</span>
+          </h3>
+          <ul class="enx-list">
+            <li>
+                <span class="lang-en">Update scores monthly to reflect real progress like pilots, launches, and hires.</span>
+                <span class="lang-jp">パイロット、ローンチ、採用などの実際の進捗を反映させるために、毎月スコアを更新します。</span>
+            </li>
+            <li>
+                <span class="lang-en">Mentors review updates and help you focus where needed.</span>
+                <span class="lang-jp">メンターは更新内容を確認し、必要な箇所に集中できるよう支援します。</span>
+            </li>
+            <li>
+                <span class="lang-en">Your dashboard shows current score, change since baseline, and progress toward goal.</span>
+                <span class="lang-jp">ダッシュボードには、現在のスコア、ベースラインからの変化、目標への進捗状況が表示されます。</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="enx-card enx-goal">
+          <h3>
+            <span class="lang-en">The goal</span>
+            <span class="lang-jp">目標</span>
+          </h3>
+           <p>
+             <span class="lang-en">
+                This is not a competition. The aim is synchronized growth across Product, Customers, and Operations.
+                By the end of the program your dashboard will show a clear record of milestones reached.
+             </span>
+             <span class="lang-jp">
+                これは競争ではありません。目的は、プロダクト、顧客、オペレーション全体での同期した成長です。
+                プログラム終了時には、ダッシュボードが達成したマイルストーンの明確な記録となります。
+             </span>
+           </p>
+        </section>
+
+        <footer class="enx-footer">
+          <p>
+            <span class="lang-en">Please complete it within one week.</span>
+            <span class="lang-jp">1週間以内に完了してください。</span>
+          </p>
+          <div class="enx-cta-group">
+            <a class="enx-cta" href="https://pa6d6f8rdjw.typeform.com/to/t9ARVCH9" target="_blank">
+                <span class="lang-en">Open the baseline survey</span>
+                <span class="lang-jp">ベースライン調査を開く</span>
+            </a>
+            <a class="enx-cta enx-cta-secondary" href="swimlanes.html">
+                <span class="lang-en">See the Swim Lanes in Action</span>
+                <span class="lang-jp">スイムレーンの実践例を見る</span>
+            </a>
+          </div>
+        </footer>
+      </div>
+    </section>
+
+    <script>
+        // Language Toggle Logic
+        const langToggle = document.getElementById('lang-toggle');
+        const body = document.body;
+        
+        // Optional: Check local storage for language preference
+        const storedLang = localStorage.getItem('site-language');
+        if (storedLang === 'jp') {
+            body.classList.add('jp-mode');
+            langToggle.textContent = 'EN';
+        }
+
+        langToggle.addEventListener('click', () => {
+            body.classList.toggle('jp-mode');
+            
+            if (body.classList.contains('jp-mode')) {
+                langToggle.textContent = 'EN';
+                localStorage.setItem('site-language', 'jp');
+            } else {
+                langToggle.textContent = 'JP';
+                localStorage.setItem('site-language', 'en');
+            }
+        });
+
+        // Stars Animation
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.style.position = 'absolute';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.background = '#ffffff';
+            star.style.borderRadius = '50%';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.opacity = Math.random() * 0.8;
+            star.style.animation = `twinkle ${Math.random() * 3 + 2}s infinite`;
+            starsContainer.appendChild(star);
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }`;
+        document.head.appendChild(style);
+        
+        // Mousemove parallax effect for stars
+        document.addEventListener('mousemove', (e) => {
+            const stars = document.querySelectorAll('.stars > div');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            stars.forEach((star, index) => {
+                const speed = (index % 5 + 1) * 0.5;
+                star.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+    </script>
+</body>
+</html>

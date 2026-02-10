@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to enXross Discord</title>
+    <meta name="description" content="Join the enXross Discord community.">
+    <meta name="robots" content="noindex,follow">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script defer src="analytics.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(circle at top, rgba(88, 101, 242, 0.25), #0a0a0a 55%);
+            color: #fff;
+            padding: 24px;
+        }
+        .card {
+            width: 100%;
+            max-width: 560px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 14px;
+            padding: 28px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+        a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #fff;
+            background: #5865F2;
+            font-weight: 600;
+        }
+        a:hover { background: #4752C4; }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>Taking you to enXross Discord...</h1>
+        <p>If redirection does not start automatically, use the button below.</p>
+        <a id="discord-manual-link" href="https://discord.gg/4Pz2kJz3V5" target="_blank" rel="noopener noreferrer">Open Discord Invite</a>
+    </main>
+
+    <script>
+        (function () {
+            const destination = "https://discord.gg/4Pz2kJz3V5";
+            const params = new URLSearchParams(window.location.search);
+            const source = params.get("src") || "unknown";
+            const manualLink = document.getElementById("discord-manual-link");
+
+            if (manualLink) {
+                manualLink.href = destination;
+            }
+
+            try {
+                localStorage.setItem("enxross_discord_source", source);
+            } catch (error) {
+                // Ignore storage failures.
+            }
+
+            if (window.enxrossTrack) {
+                window.enxrossTrack("discord_redirect", {
+                    source: source,
+                    page_path: window.location.pathname
+                });
+            }
+
+            window.setTimeout(function () {
+                window.location.replace(destination);
+            }, 220);
+        })();
+    </script>
+</body>
+</html>

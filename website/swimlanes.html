@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>enXross DAO - Kaizen Currents Progress Tracker</title>
+    <meta name="description" content="Track startup progress across Product, Customers, and Operations for enXross DAO at Tokyo Dome City">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+    <script defer src="analytics.js"></script>
+    <style>
+        :root {
+            --bg: #0b0f15;
+            --panel: #151a22;
+            --panel-2: #10141b;
+            --text: #e6e9ee;
+            --muted: #a8b0bd;
+            --accent-1: #62f5a3;
+            --accent-2: #7aa8ff;
+            --accent-3: #ffd281;
+            --ring: rgba(122, 168, 255, .45);
+            --radius: 18px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+            --grad: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(1200px 600px at 10% 0%, rgba(98, 245, 163, .08), transparent 60%),
+                        radial-gradient(1000px 500px at 90% 10%, rgba(122, 168, 255, .08), transparent 60%),
+                        var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding: 0 0 clamp(28px, 5vw, 56px) 0; /* Adjusted padding to accommodate nav */
+        }
+
+        /* Japanese Font Support */
+        body.jp-mode {
+            font-family: 'Noto Sans JP', 'Poppins', sans-serif;
+        }
+
+        /* Language Toggling Utility Classes */
+        .lang-jp { display: none; }
+        body.jp-mode .lang-en { display: none; }
+        body.jp-mode .lang-jp { display: block; }
+        
+        /* Inline toggling */
+        body.jp-mode span.lang-en { display: none; }
+        body.jp-mode span.lang-jp { display: inline; }
+        span.lang-jp { display: none; }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent-2);
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(0, 255, 255, 0.2);
+            padding: 1rem 0;
+            z-index: 1000;
+            margin-bottom: 40px;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logos {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-main {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: #00ffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #ffffff;
+        }
+
+        /* Language Toggle Button */
+        .lang-btn {
+            background: transparent;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .lang-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 0 0 32px 0;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: clamp(16px, 2vw, 18px);
+            color: var(--accent-2);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: clamp(15px, 2vw, 18px);
+            color: var(--muted);
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+
+        .main-title {
+            font-size: clamp(32px, 4.5vw, 48px);
+            font-weight: 700;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.1;
+            margin-bottom: 8px;
+        }
+
+        .legend {
+            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: var(--radius);
+            padding: clamp(20px, 3vw, 28px);
+            margin: 14px 0 32px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .legend h3 {
+            color: var(--text);
+            font-size: clamp(20px, 2.5vw, 26px);
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        .legend > p {
+            color: var(--text);
+            opacity: .92;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+        }
+
+        .legend-column {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, .04);
+            border-radius: 12px;
+            padding: clamp(16px, 2vw, 20px);
+        }
+
+        .legend-column h4 {
+            font-size: clamp(16px, 2vw, 18px);
+            margin-bottom: 16px;
+            font-weight: 700;
+            letter-spacing: .5px;
+        }
+
+        .legend-item {
+            margin: 10px 0;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            border-left: 3px solid;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .legend-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .legend-item.product { border-left-color: var(--accent-1); }
+        .legend-item.customers { border-left-color: var(--accent-2); }
+        .legend-item.operations { border-left-color: var(--accent-3); }
+
+        .legend-item strong {
+            color: var(--text);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .legend-item span {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .startup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 14px;
+            margin: 32px 0;
+        }
+
+        .startup-card {
+            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: var(--radius);
+            padding: clamp(18px, 2.5vw, 24px);
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .startup-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(122, 168, 255, .3);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, .45);
+        }
+
+        .startup-name {
+            font-size: clamp(18px, 2.2vw, 22px);
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: .3px;
+        }
+
+        .kaizen-current {
+            margin: 16px 0;
+        }
+
+        .current-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .current-label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .current-score {
+            font-size: clamp(16px, 2vw, 18px);
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            animation: shimmer 2.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .progress-bar.product {
+            background: linear-gradient(90deg, var(--accent-1), rgba(98, 245, 163, 0.7));
+        }
+
+        .progress-bar.customers {
+            background: linear-gradient(90deg, var(--accent-2), rgba(122, 168, 255, 0.7));
+        }
+
+        .progress-bar.operations {
+            background: linear-gradient(90deg, var(--accent-3), rgba(255, 210, 129, 0.7));
+        }
+
+        .progress-bar:hover {
+            filter: brightness(1.15);
+        }
+
+        .milestone-indicator {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .cohort-summary {
+            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: var(--radius);
+            padding: clamp(24px, 3vw, 32px);
+            margin: 32px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .cohort-summary h2 {
+            color: var(--text);
+            font-size: clamp(24px, 3vw, 32px);
+            margin-bottom: 24px;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 12px;
+            padding: clamp(16px, 2.5vw, 22px);
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(122, 168, 255, .2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: clamp(28px, 4vw, 36px);
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .update-notice {
+            background: rgba(255, 210, 129, 0.08);
+            border: 1px solid rgba(255, 210, 129, 0.25);
+            border-radius: var(--radius);
+            padding: clamp(18px, 2.5vw, 24px);
+            margin: 24px 0;
+            text-align: center;
+        }
+
+        .update-notice p {
+            color: var(--text);
+            font-size: clamp(14px, 1.8vw, 16px);
+            line-height: 1.6;
+            opacity: .92;
+        }
+
+        .update-notice strong {
+            color: var(--accent-3);
+        }
+
+        .last-updated {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            margin: 32px 0 20px 0;
+        }
+
+        /* Responsive Nav */
+        @media (max-width: 768px) {
+            .nav-menu { gap: 1rem; font-size: 0.8rem; }
+        }
+
+        @media (max-width: 900px) {
+            .startup-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0 0 clamp(20px, 4vw, 32px) 0;
+            }
+
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .main-title {
+                font-size: clamp(28px, 6vw, 36px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logos">
+                <a href="index.html">
+                    <img src="images/enxross_logo.jpg" onerror="this.src='https://placehold.co/40x40/00ffff/000000?text=ENX'" alt="enXross DAO Logo" class="logo-main">
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li>
+                    <a href="index.html">
+                        <span class="lang-en">Home</span>
+                        <span class="lang-jp">ホーム</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="schedule.html">
+                        <span class="lang-en">Calendar</span>
+                        <span class="lang-jp">カレンダー</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="dao.html">
+                        <span class="lang-en">DAO</span>
+                        <span class="lang-jp">DAO</span>
+                    </a>
+                </li>
+                <li>
+                    <button id="lang-toggle" class="lang-btn">JP</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <header class="header">
+            <h1>
+                <span class="lang-en">enXross DAO</span>
+                <span class="lang-jp">enXross DAO</span>
+            </h1>
+            <div class="main-title">
+                <span class="lang-en">Kaizen Currents Progress Tracker</span>
+                <span class="lang-jp">改善カレント進捗トラッカー</span>
+            </div>
+            <p>
+                <span class="lang-en">Tokyo Dome City Startup Accelerator • January-June 2026 Cohort</span>
+                <span class="lang-jp">東京ドームシティ・スタートアップ・アクセラレーター • 2026年1月-6月期</span>
+            </p>
+        </header>
+
+        <div class="update-notice">
+            <p>
+                <span class="lang-en"><strong>📊 Sample Data Displayed:</strong> This dashboard shows example progress data for demonstration. Real team data will be updated bi-weekly based on mentor assessments and self-reporting. <a href="baseline.html" style="color: var(--accent-2); text-decoration: underline; font-weight: 600; transition: color 0.2s ease;" onmouseover="this.style.color='var(--accent-1)'" onmouseout="this.style.color='var(--accent-2)'">Learn how baselines are created →</a></span>
+                <span class="lang-jp"><strong>📊 サンプルデータ表示中:</strong> このダッシュボードはデモンストレーション用のサンプル進捗データを表示しています。実際のチームデータは、メンターの評価と自己申告に基づいて隔週で更新されます。<a href="baseline.html" style="color: var(--accent-2); text-decoration: underline; font-weight: 600; transition: color 0.2s ease;" onmouseover="this.style.color='var(--accent-1)'" onmouseout="this.style.color='var(--accent-2)'">ベースラインの作成方法はこちら →</a></span>
+            </p>
+        </div>
+
+        <div class="legend">
+            <h3>
+                <span class="lang-en">Understanding the Kaizen Currents</span>
+                <span class="lang-jp">改善カレント（成長の軌道）を理解する</span>
+            </h3>
+            <p style="color: var(--text); opacity: .92; margin-bottom: 24px; line-height: 1.6;">
+                <span class="lang-en">
+                    Each startup progresses across three dimensions: <strong style="color: var(--accent-1);">Product</strong>, <strong style="color: var(--accent-2);">Customers</strong>, and <strong style="color: var(--accent-3);">Operations</strong>. Scores range from 0-100, with synchronized growth being the goal — not competition. The framework ensures balanced advancement across all currents.
+                </span>
+                <span class="lang-jp">
+                    各スタートアップは、<strong style="color: var(--accent-1);">プロダクト</strong>、<strong style="color: var(--accent-2);">顧客</strong>、<strong style="color: var(--accent-3);">オペレーション</strong>の3つの次元で進捗します。スコアは0〜100の範囲で、目標は競争ではなく、同期した成長です。このフレームワークは、すべてのカレントでバランスの取れた進歩を保証します。
+                </span>
+            </p>
+            
+            <div class="legend-grid">
+                <div class="legend-column">
+                    <h4 style="color: var(--accent-1);">
+                        <span class="lang-en">🛠️ Product Current</span>
+                        <span class="lang-jp">🛠️ プロダクトカレント</span>
+                    </h4>
+                    <p style="color: var(--muted); font-size: 13px; margin-bottom: 14px; font-style: italic;">
+                        <span class="lang-en">(Build & Technical Maturity)</span>
+                        <span class="lang-jp">（構築と技術的成熟度）</span>
+                    </p>
+                    <div class="legend-item product">
+                        <strong>
+                            <span class="lang-en">1. Product Stage & Stability</span>
+                            <span class="lang-jp">1. 製品段階と安定性</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">From concept validation to production-ready build</span>
+                            <span class="lang-jp">コンセプト検証から製品版ビルドまで</span>
+                        </span>
+                    </div>
+                    <div class="legend-item product">
+                        <strong>
+                            <span class="lang-en">2. Technical Architecture</span>
+                            <span class="lang-jp">2. 技術アーキテクチャ</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Infrastructure design, scalability, and reliability</span>
+                            <span class="lang-jp">インフラ設計、拡張性、信頼性</span>
+                        </span>
+                    </div>
+                    <div class="legend-item product">
+                        <strong>
+                            <span class="lang-en">3. User Experience (UX)</span>
+                            <span class="lang-jp">3. ユーザーエクスペリエンス (UX)</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Interface design, usability, and user satisfaction</span>
+                            <span class="lang-jp">インターフェース設計、使いやすさ、ユーザー満足度</span>
+                        </span>
+                    </div>
+                    <div class="legend-item product">
+                        <strong>
+                            <span class="lang-en">4. Integration Readiness</span>
+                            <span class="lang-jp">4. 統合準備状況</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">API capabilities, partnerships, and system compatibility</span>
+                            <span class="lang-jp">API機能、パートナーシップ、システム互換性</span>
+                        </span>
+                    </div>
+                    <div class="legend-item product">
+                        <strong>
+                            <span class="lang-en">5. Data & Analytics</span>
+                            <span class="lang-jp">5. データと分析</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Metrics collection, insights generation, and data strategy</span>
+                            <span class="lang-jp">指標収集、洞察生成、データ戦略</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="legend-column">
+                    <h4 style="color: var(--accent-2);">
+                        <span class="lang-en">👥 Customers Current</span>
+                        <span class="lang-jp">👥 顧客カレント</span>
+                    </h4>
+                    <p style="color: var(--muted); font-size: 13px; margin-bottom: 14px; font-style: italic;">
+                        <span class="lang-en">(Market & Traction)</span>
+                        <span class="lang-jp">（市場とトラクション）</span>
+                    </p>
+                    <div class="legend-item customers">
+                        <strong>
+                            <span class="lang-en">1. Audience Definition</span>
+                            <span class="lang-jp">1. ターゲット定義</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Clear target market and customer segmentation</span>
+                            <span class="lang-jp">明確なターゲット市場と顧客セグメンテーション</span>
+                        </span>
+                    </div>
+                    <div class="legend-item customers">
+                        <strong>
+                            <span class="lang-en">2. User Feedback & Engagement</span>
+                            <span class="lang-jp">2. ユーザーフィードバックとエンゲージメント</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Active listening, iteration based on user input</span>
+                            <span class="lang-jp">積極的な傾聴、ユーザー入力に基づく反復改善</span>
+                        </span>
+                    </div>
+                    <div class="legend-item customers">
+                        <strong>
+                            <span class="lang-en">3. Pilot Activations</span>
+                            <span class="lang-jp">3. パイロット実施</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Live testing with real users in target environments</span>
+                            <span class="lang-jp">ターゲット環境での実ユーザーによるライブテスト</span>
+                        </span>
+                    </div>
+                    <div class="legend-item customers">
+                        <strong>
+                            <span class="lang-en">4. Paying Customers</span>
+                            <span class="lang-jp">4. 有料顧客</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Revenue generation and monetization validation</span>
+                            <span class="lang-jp">収益創出と収益化の検証</span>
+                        </span>
+                    </div>
+                    <div class="legend-item customers">
+                        <strong>
+                            <span class="lang-en">5. Repeat or Growth Customers</span>
+                            <span class="lang-jp">5. リピートまたは成長顧客</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Retention, expansion, and sustainable growth</span>
+                            <span class="lang-jp">維持、拡大、持続可能な成長</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="legend-column">
+                    <h4 style="color: var(--accent-3);">
+                        <span class="lang-en">⚙️ Operations Current</span>
+                        <span class="lang-jp">⚙️ オペレーションカレント</span>
+                    </h4>
+                    <p style="color: var(--muted); font-size: 13px; margin-bottom: 14px; font-style: italic;">
+                        <span class="lang-en">(Team & Organizational Strength)</span>
+                        <span class="lang-jp">（チームと組織力）</span>
+                    </p>
+                    <div class="legend-item operations">
+                        <strong>
+                            <span class="lang-en">1. Team Composition</span>
+                            <span class="lang-jp">1. チーム構成</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Core roles filled, skills balanced, culture defined</span>
+                            <span class="lang-jp">主要な役割の配置、スキルのバランス、文化の定義</span>
+                        </span>
+                    </div>
+                    <div class="legend-item operations">
+                        <strong>
+                            <span class="lang-en">2. Processes & Workflow</span>
+                            <span class="lang-jp">2. プロセスとワークフロー</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Established systems, OKRs, and operational efficiency</span>
+                            <span class="lang-jp">確立されたシステム、OKR、業務効率</span>
+                        </span>
+                    </div>
+                    <div class="legend-item operations">
+                        <strong>
+                            <span class="lang-en">3. Financial Model & Metrics</span>
+                            <span class="lang-jp">3. 財務モデルと指標</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Unit economics, runway, and financial planning</span>
+                            <span class="lang-jp">ユニットエコノミクス、ランウェイ、財務計画</span>
+                        </span>
+                    </div>
+                    <div class="legend-item operations">
+                        <strong>
+                            <span class="lang-en">4. Fundraising Prep</span>
+                            <span class="lang-jp">4. 資金調達準備</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Pitch deck, data room, and investor readiness</span>
+                            <span class="lang-jp">ピッチデック、データルーム、投資家対応準備</span>
+                        </span>
+                    </div>
+                    <div class="legend-item operations">
+                        <strong>
+                            <span class="lang-en">5. Governance & Readiness</span>
+                            <span class="lang-jp">5. ガバナンスと準備状況</span>
+                        </strong>
+                        <span>
+                            <span class="lang-en">Legal structure, compliance, and scaling foundations</span>
+                            <span class="lang-jp">法的構造、コンプライアンス、スケーリング基盤</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="startup-grid" id="startupGrid">
+            <!-- Startup cards will be generated here by JavaScript -->
+        </div>
+
+        <div class="cohort-summary">
+            <h2>
+                <span class="lang-en">Cohort Overview</span>
+                <span class="lang-jp">コホート概要</span>
+            </h2>
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <div class="stat-label">
+                        <span class="lang-en">Average Product Score</span>
+                        <span class="lang-jp">平均プロダクトスコア</span>
+                    </div>
+                    <div class="stat-value" id="avgProduct">58</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">
+                        <span class="lang-en">Average Customers Score</span>
+                        <span class="lang-jp">平均顧客スコア</span>
+                    </div>
+                    <div class="stat-value" id="avgCustomers">52</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">
+                        <span class="lang-en">Average Operations Score</span>
+                        <span class="lang-jp">平均オペレーションスコア</span>
+                    </div>
+                    <div class="stat-value" id="avgOperations">48</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">
+                        <span class="lang-en">Cohort Balance Index</span>
+                        <span class="lang-jp">コホートバランス指数</span>
+                    </div>
+                    <div class="stat-value" id="balanceIndex">85%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="last-updated">
+            <span class="lang-en">Last updated:</span><span class="lang-jp">最終更新:</span> <span id="lastUpdated"></span>
+        </div>
+    </div>
+
+    <script>
+        // Language Toggle Logic
+        const langToggle = document.getElementById('lang-toggle');
+        const body = document.body;
+        
+        // Optional: Check local storage for language preference
+        const storedLang = localStorage.getItem('site-language');
+        if (storedLang === 'jp') {
+            body.classList.add('jp-mode');
+            langToggle.textContent = 'EN';
+        }
+
+        langToggle.addEventListener('click', () => {
+            body.classList.toggle('jp-mode');
+            
+            if (body.classList.contains('jp-mode')) {
+                langToggle.textContent = 'EN';
+                localStorage.setItem('site-language', 'jp');
+            } else {
+                langToggle.textContent = 'JP';
+                localStorage.setItem('site-language', 'en');
+            }
+        });
+
+        // Sample startup data - showing realistic imbalances to demonstrate sync issues
+        const startups = [
+            { id: 1, name: "Startup #1", product: 88, customers: 15, operations: 25 }, // Strong product, weak market
+            { id: 2, name: "Startup #2", product: 35, customers: 82, operations: 40 }, // Strong traction, product catching up
+            { id: 3, name: "Startup #3", product: 65, customers: 68, operations: 72 }, // Well balanced, good sync
+            { id: 4, name: "Startup #4", product: 92, customers: 8, operations: 18 }, // Technical excellence, no customers yet
+            { id: 5, name: "Startup #5", product: 45, customers: 48, operations: 85 }, // Strong ops, building product
+            { id: 6, name: "Startup #6", product: 72, customers: 25, operations: 30 }, // Product ready, finding market fit
+            { id: 7, name: "Startup #7", product: 20, customers: 75, operations: 55 }, // Customer demand outpacing product
+            { id: 8, name: "Startup #8", product: 58, customers: 60, operations: 62 }, // Synchronized growth
+            { id: 9, name: "Startup #9", product: 15, customers: 12, operations: 70 }, // Strong team, early stage build
+            { id: 10, name: "Startup #10", product: 80, customers: 78, operations: 35 } // Market traction, ops needs work
+        ];
+
+        function getMilestone(score) {
+            // Returns HTML string with EN and JP spans
+            if (score >= 90) return '<span class="lang-en">Excellent (4.5-5.0 avg)</span><span class="lang-jp">優秀 (平均4.5-5.0)</span>';
+            if (score >= 80) return '<span class="lang-en">Strong (4.0-4.5 avg)</span><span class="lang-jp">強力 (平均4.0-4.5)</span>';
+            if (score >= 70) return '<span class="lang-en">Good (3.5-4.0 avg)</span><span class="lang-jp">良好 (平均3.5-4.0)</span>';
+            if (score >= 60) return '<span class="lang-en">Developing (3.0-3.5 avg)</span><span class="lang-jp">発展中 (平均3.0-3.5)</span>';
+            if (score >= 50) return '<span class="lang-en">Emerging (2.5-3.0 avg)</span><span class="lang-jp">萌芽期 (平均2.5-3.0)</span>';
+            if (score >= 40) return '<span class="lang-en">Early Stage (2.0-2.5 avg)</span><span class="lang-jp">早期 (平均2.0-2.5)</span>';
+            if (score >= 30) return '<span class="lang-en">Foundation (1.5-2.0 avg)</span><span class="lang-jp">基礎 (平均1.5-2.0)</span>';
+            if (score >= 20) return '<span class="lang-en">Initial (1.0-1.5 avg)</span><span class="lang-jp">初期 (平均1.0-1.5)</span>';
+            return '<span class="lang-en">Planning (0-1.0 avg)</span><span class="lang-jp">計画中 (平均0-1.0)</span>';
+        }
+
+        function createStartupCard(startup) {
+            return `
+                <div class="startup-card">
+                    <div class="startup-name">${startup.name}</div>
+                    
+                    <div class="kaizen-current">
+                        <div class="current-header">
+                            <span class="current-label" style="color: var(--accent-1);">
+                                <span class="lang-en">🛠️ Product</span>
+                                <span class="lang-jp">🛠️ プロダクト</span>
+                            </span>
+                            <span class="current-score">${startup.product}</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar product" style="width: ${startup.product}%"></div>
+                        </div>
+                        <div class="milestone-indicator">${getMilestone(startup.product)}</div>
+                    </div>
+
+                    <div class="kaizen-current">
+                        <div class="current-header">
+                            <span class="current-label" style="color: var(--accent-2);">
+                                <span class="lang-en">👥 Customers</span>
+                                <span class="lang-jp">👥 顧客</span>
+                            </span>
+                            <span class="current-score">${startup.customers}</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar customers" style="width: ${startup.customers}%"></div>
+                        </div>
+                        <div class="milestone-indicator">${getMilestone(startup.customers)}</div>
+                    </div>
+
+                    <div class="kaizen-current">
+                        <div class="current-header">
+                            <span class="current-label" style="color: var(--accent-3);">
+                                <span class="lang-en">⚙️ Operations</span>
+                                <span class="lang-jp">⚙️ オペレーション</span>
+                            </span>
+                            <span class="current-score">${startup.operations}</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar operations" style="width: ${startup.operations}%"></div>
+                        </div>
+                        <div class="milestone-indicator">${getMilestone(startup.operations)}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function calculateCohortStats() {
+            const totals = startups.reduce((acc, startup) => {
+                acc.product += startup.product;
+                acc.customers += startup.customers;
+                acc.operations += startup.operations;
+                return acc;
+            }, { product: 0, customers: 0, operations: 0 });
+
+            const avgProduct = Math.round(totals.product / startups.length);
+            const avgCustomers = Math.round(totals.customers / startups.length);
+            const avgOperations = Math.round(totals.operations / startups.length);
+
+            // Balance index: how close are the three averages to each other
+            const max = Math.max(avgProduct, avgCustomers, avgOperations);
+            const min = Math.min(avgProduct, avgCustomers, avgOperations);
+            const balanceIndex = Math.round((1 - (max - min) / 100) * 100);
+
+            document.getElementById('avgProduct').textContent = avgProduct;
+            document.getElementById('avgCustomers').textContent = avgCustomers;
+            document.getElementById('avgOperations').textContent = avgOperations;
+            document.getElementById('balanceIndex').textContent = balanceIndex + '%';
+        }
+
+        function renderStartups() {
+            const grid = document.getElementById('startupGrid');
+            grid.innerHTML = startups.map(startup => createStartupCard(startup)).join('');
+        }
+
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const numberOfStars = 100;
+
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('lastUpdated').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        // Initialize
+        createStars();
+        renderStartups();
+        calculateCohortStats();
+        updateLastUpdated();
+
+        // Add subtle parallax effect on mouse move
+        document.addEventListener('mousemove', (e) => {
+            const stars = document.querySelectorAll('.star');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            stars.forEach((star, index) => {
+                const speed = (index % 5 + 1) * 0.5;
+                star.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
