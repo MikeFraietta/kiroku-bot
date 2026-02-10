@@ -235,9 +235,9 @@ class CodeOps:
         candidate = (text or "").strip()
         if not candidate:
             return False
-        if re.search(r"(?m)^diff --git\\s", candidate):
+        if re.search(r"(?m)^diff --git\s", candidate):
             return True
-        if re.search(r"(?m)^---\\s", candidate) and re.search(r"(?m)^\\+\\+\\+\\s", candidate):
+        if re.search(r"(?m)^---\s", candidate) and re.search(r"(?m)^\+\+\+\s", candidate):
             return True
         return False
 
@@ -247,22 +247,37 @@ class CodeOps:
             return ""
 
         # Prefer extracting a fenced diff block if present.
-        fenced = re.findall(r"```(?:diff)?\\s*\\n(.*?)```", text, flags=re.S)
+        fenced = re.findall(r"```(?:diff)?\s*\n(.*?)```", text, flags=re.S)
         for block in fenced:
             block = block.strip()
             if self._looks_like_unified_diff(block):
                 return block.strip() + "\n"
 
         # Otherwise, extract from the first diff marker.
-        m = re.search(r"(?m)^diff --git\\s", text)
+        m = re.search(r"(?m)^diff --git\s", text)
         if m:
             return text[m.start() :].strip() + "\n"
-        m = re.search(r"(?m)^---\\sa/", text)
+        m = re.search(r"(?m)^---\sa/", text)
         if m:
             return text[m.start() :].strip() + "\n"
 
         # Fallback to returning the full text (caller can validate and raise).
         return text.strip() + "\n"
+
+    def _sanitize_diff_text(self, diff_text: str) -> str:
+        """
+        Normalize model output into something `git apply` is more likely to accept.
+
+        LLMs frequently hallucinate `index <sha>..<sha>` lines (sometimes with non-hex chars),
+        but git doesn't need them for text patches.
+        """
+        text = (diff_text or "").replace("\r\n", "\n").strip("\n")
+        if not text.strip():
+            return ""
+
+        lines = [ln for ln in text.splitlines() if not ln.startswith("index ")]
+        cleaned = "\n".join(lines).strip("\n")
+        return cleaned + "\n" if cleaned else ""
 
     def _is_placeholder_task(self, task: CodeTask) -> bool:
         def _is_placeholder(s: str) -> bool:
@@ -364,12 +379,12 @@ class CodeOps:
                 )
 
             raw1 = await self._llm_patch(task, strict=False)
-            candidate = self._extract_unified_diff(raw1)
+            candidate = self._sanitize_diff_text(self._extract_unified_diff(raw1))
 
             if not self._looks_like_unified_diff(candidate):
                 # Retry once with a stricter prompt if the model responded with prose.
                 raw2 = await self._llm_patch(task, strict=True)
-                candidate2 = self._extract_unified_diff(raw2)
+                candidate2 = self._sanitize_diff_text(self._extract_unified_diff(raw2))
                 if self._looks_like_unified_diff(candidate2):
                     candidate = candidate2
                 else:
