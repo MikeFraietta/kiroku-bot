@@ -94,6 +94,33 @@ Best,
 {{sender_email}}
 {{sponsorship_page_url}}
 
+## Template D: Housing Partner
+Subject: Official Housing Partner for enXross Cohort in {{cohort_city}}
+
+Hi {{first_name}},
+
+I am reaching out because enXross is selecting one **Official Housing Partner** for our next cohort in {{cohort_city}} ({{cohort_date_window}}).
+
+enXross is a six-month startup residency inside Tokyo Dome City, designed to help founder teams build and launch products in market.
+
+What this partnership is designed to deliver for {{company}}:
+- Default placement: the recommended stay option for founders, mentors, and visiting partners (multi-month room nights).
+- Brand ownership: positioned as the official residence partner for the cohort (not a logo-only sponsorship).
+- Measurable outcomes: inquiries, booked room nights, and long-stay conversions tracked cohort-wide.
+
+If useful, I can send a 1-page executive brief and a concrete activation plan (inventory, rates, and projected room nights) this week.
+
+Would you be open to a focused 20-minute call?
+{{calendar_link}}
+
+Best,
+{{sender_name}}
+{{sender_title}}
+{{sender_email}}
+{{sponsorship_page_url}}
+
+PS: If you would prefer I do not follow up again, reply "no" and I will close the loop.
+
 ## Follow-up #1 (3-4 business days later)
 Subject: Re: Official {{track}} Partner for enXross
 

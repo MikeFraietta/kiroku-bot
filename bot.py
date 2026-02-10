@@ -14,6 +14,7 @@ from apscheduler.triggers.cron import CronTrigger
 from dotenv import load_dotenv
 
 from codeops import CodeOps, CodeOpsConfig, CodeOpsError, parse_task_id, parse_title_and_instructions
+from outreach_ops import OutreachOps, OutreachOpsConfig, OutreachOpsError
 
 
 load_dotenv()
@@ -41,6 +42,23 @@ class BotConfig:
     anthropic_model: str
     anthropic_base_url: str
     anthropic_version: str
+    outreach_state_dir: Path
+    website_dir: Path
+    outreach_sender_name: str
+    outreach_sender_title: str
+    outreach_sender_email: str
+    outreach_calendar_link: str
+    outreach_sponsorship_page_url: str
+    outreach_cohort_date_window: str
+    outreach_cohort_city: str
+    smtp_host: str
+    smtp_port: int
+    smtp_user: str
+    smtp_password: str
+    outreach_send_enabled: bool
+    search_provider: str
+    serpapi_api_key: str | None
+    bing_search_api_key: str | None
 
 
 def _env_bool(name: str, default: bool) -> bool:
@@ -86,6 +104,14 @@ def load_config() -> BotConfig:
     if not tasks_file.is_absolute():
         tasks_file = repo_path / tasks_file
 
+    outreach_state_dir = Path(os.getenv("OUTREACH_STATE_DIR", ".kiroku/outreach")).expanduser()
+    if not outreach_state_dir.is_absolute():
+        outreach_state_dir = repo_path / outreach_state_dir
+    website_dir = (repo_path / "website").resolve()
+
+    smtp_port_raw = os.getenv("SMTP_PORT", "465").strip()
+    smtp_port = int(smtp_port_raw) if smtp_port_raw.isdigit() else 465
+
     return BotConfig(
         discord_token=token,
         command_prefix=os.getenv("BOT_COMMAND_PREFIX", "!kiroku").strip() or "!kiroku",
@@ -106,6 +132,23 @@ def load_config() -> BotConfig:
         anthropic_base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com").strip()
         or "https://api.anthropic.com",
         anthropic_version=os.getenv("ANTHROPIC_VERSION", "2023-06-01").strip() or "2023-06-01",
+        outreach_state_dir=outreach_state_dir,
+        website_dir=website_dir,
+        outreach_sender_name=os.getenv("OUTREACH_SENDER_NAME", "").strip(),
+        outreach_sender_title=os.getenv("OUTREACH_SENDER_TITLE", "").strip(),
+        outreach_sender_email=os.getenv("OUTREACH_SENDER_EMAIL", "").strip(),
+        outreach_calendar_link=os.getenv("OUTREACH_CALENDAR_LINK", "").strip(),
+        outreach_sponsorship_page_url=os.getenv("OUTREACH_SPONSORSHIP_PAGE_URL", "").strip(),
+        outreach_cohort_date_window=os.getenv("OUTREACH_COHORT_DATE_WINDOW", "").strip(),
+        outreach_cohort_city=os.getenv("OUTREACH_COHORT_CITY", "Tokyo").strip() or "Tokyo",
+        smtp_host=os.getenv("SMTP_HOST", "smtp.gmail.com").strip() or "smtp.gmail.com",
+        smtp_port=smtp_port,
+        smtp_user=os.getenv("SMTP_USER", "").strip(),
+        smtp_password=os.getenv("SMTP_PASSWORD", "").strip(),
+        outreach_send_enabled=_env_bool("OUTREACH_SEND_ENABLED", False),
+        search_provider=os.getenv("SEARCH_PROVIDER", "").strip(),
+        serpapi_api_key=(os.getenv("SERPAPI_API_KEY", "").strip() or None),
+        bing_search_api_key=(os.getenv("BING_SEARCH_API_KEY", "").strip() or None),
     )
 
 
@@ -134,9 +177,30 @@ ops = CodeOps(
     )
 )
 
+outreach = OutreachOps(
+    OutreachOpsConfig(
+        state_dir=CONFIG.outreach_state_dir,
+        website_dir=CONFIG.website_dir,
+        sender_name=CONFIG.outreach_sender_name,
+        sender_title=CONFIG.outreach_sender_title,
+        sender_email=CONFIG.outreach_sender_email,
+        calendar_link=CONFIG.outreach_calendar_link,
+        sponsorship_page_url=CONFIG.outreach_sponsorship_page_url,
+        cohort_date_window=CONFIG.outreach_cohort_date_window,
+        cohort_city=CONFIG.outreach_cohort_city,
+        smtp_host=CONFIG.smtp_host,
+        smtp_port=CONFIG.smtp_port,
+        smtp_user=CONFIG.smtp_user,
+        smtp_password=CONFIG.smtp_password,
+        send_enabled=CONFIG.outreach_send_enabled,
+        search_provider=CONFIG.search_provider,
+        serpapi_api_key=CONFIG.serpapi_api_key or "",
+        bing_api_key=CONFIG.bing_search_api_key or "",
+    )
+)
 
 READ_COMMANDS = {"help", "status", "tasks", "show", "preview", "repo", "id", "ping"}
-MUTATING_COMMANDS = {"task", "plan", "diff", "apply", "commit", "pr", "run"}
+MUTATING_COMMANDS = {"task", "plan", "diff", "apply", "commit", "pr", "run", "outreach", "do"}
 
 
 def _is_admin_channel(channel_id: int) -> bool:
@@ -204,6 +268,8 @@ async def _handle_help(message: discord.Message) -> None:
         "- commit <id> [commit message]\n"
         "- pr <id>\n"
         "- run <id> (plan+diff+apply+commit+pr)\n"
+        "- outreach help\n"
+        "- do <freeform request> (shortcut for common outreach workflows)\n"
     )
     await _send_chunks(message.channel, text)
 
@@ -360,6 +426,173 @@ async def _handle_run(message: discord.Message, args: str) -> None:
     task = await ops.publish_task(task_id)
     await _send_chunks(message.channel, f"5/5 published: {task.compare_url}")
 
+def _resolve_outreach_path(arg: str) -> Path:
+    raw = (arg or "").strip()
+    if not raw:
+        raise OutreachOpsError("Missing file path argument.")
+
+    p = Path(raw).expanduser()
+    if p.is_absolute():
+        return p
+    # If user passes a bare filename, default to outreach state dir.
+    if "/" not in raw and "\\" not in raw:
+        return (CONFIG.outreach_state_dir / raw).resolve()
+    return (CONFIG.repo_path / p).resolve()
+
+
+async def _handle_outreach(message: discord.Message, args: str) -> None:
+    raw = (args or "").strip()
+    if not raw or raw.lower() == "help":
+        text = (
+            "Outreach ops\n"
+            "Usage:\n"
+            f"- {CONFIG.command_prefix} outreach config\n"
+            f"- {CONFIG.command_prefix} outreach generate housing <count>\n"
+            f"- {CONFIG.command_prefix} outreach draft <leads_csv_path>\n"
+            f"- {CONFIG.command_prefix} outreach send <outbox_csv_path> [--limit N] [--dry-run|--send] [--approved-only|--all] [--confirm SEND]\n"
+            "\n"
+            "Notes:\n"
+            "- Lead generation requires SEARCH_PROVIDER + API key (SERPAPI_API_KEY or BING_SEARCH_API_KEY).\n"
+            "- Sending requires SMTP_* + OUTREACH_SEND_ENABLED=true.\n"
+            "- `send` defaults to dry-run; use `--send --confirm SEND` to actually send.\n"
+        )
+        await _send_chunks(message.channel, text)
+        return
+
+    sub, _, rest = raw.partition(" ")
+    sub = sub.strip().lower()
+    rest = rest.strip()
+
+    if sub == "config":
+        await _send_chunks(message.channel, outreach.config_summary())
+        return
+
+    if sub == "generate":
+        parts = rest.split()
+        if len(parts) < 2:
+            raise OutreachOpsError("Usage: outreach generate housing <count>")
+        kind = parts[0].strip().lower()
+        if kind != "housing":
+            raise OutreachOpsError("Only `housing` is supported right now.")
+        if not parts[1].isdigit():
+            raise OutreachOpsError("count must be a number, e.g. `100`.")
+        count = int(parts[1])
+        await _send_chunks(message.channel, f"Generating {count} housing leads (search_provider={CONFIG.search_provider or 'missing'}) ...")
+        leads_path = await outreach.generate_housing_leads(count, city=CONFIG.outreach_cohort_city or "Tokyo", country="Japan")
+        await _send_chunks(message.channel, f"Leads written: {leads_path.name}")
+        await message.channel.send(file=discord.File(str(leads_path)))
+        return
+
+    if sub == "draft":
+        if not rest:
+            raise OutreachOpsError("Usage: outreach draft <leads_csv_path>")
+        leads_path = _resolve_outreach_path(rest)
+        outbox_path = outreach.draft_housing_emails(leads_path)
+        await _send_chunks(message.channel, f"Drafted emails written: {outbox_path.name} (approve rows by setting approved=yes)")
+        await message.channel.send(file=discord.File(str(outbox_path)))
+        return
+
+    if sub == "send":
+        parts = rest.split()
+        if not parts:
+            raise OutreachOpsError("Usage: outreach send <outbox_csv_path> [--limit N] [--dry-run|--send] [--approved-only|--all] [--confirm SEND]")
+
+        outbox_path = _resolve_outreach_path(parts[0])
+        limit = 10
+        dry_run = True
+        approved_only = True
+        confirm = ""
+
+        i = 1
+        while i < len(parts):
+            token = parts[i]
+            if token == "--limit":
+                if i + 1 >= len(parts) or not parts[i + 1].isdigit():
+                    raise OutreachOpsError("--limit requires a number.")
+                limit = int(parts[i + 1])
+                i += 2
+                continue
+            if token == "--dry-run":
+                dry_run = True
+                i += 1
+                continue
+            if token == "--send":
+                dry_run = False
+                i += 1
+                continue
+            if token == "--approved-only":
+                approved_only = True
+                i += 1
+                continue
+            if token == "--all":
+                approved_only = False
+                i += 1
+                continue
+            if token == "--confirm":
+                confirm = parts[i + 1] if i + 1 < len(parts) else ""
+                i += 2
+                continue
+            raise OutreachOpsError(f"Unknown flag: {token}")
+
+        if not dry_run and confirm.strip().upper() != "SEND":
+            raise OutreachOpsError("Refusing to send without `--confirm SEND`.")
+
+        attempted, sent, _ = outreach.send_outbox(
+            outbox_path,
+            limit=limit,
+            dry_run=dry_run,
+            approved_only=approved_only,
+        )
+        await _send_chunks(
+            message.channel,
+            (
+                f"Outbox processed: {outbox_path.name}\n"
+                f"mode={'dry-run' if dry_run else 'send'} approved_only={'yes' if approved_only else 'no'} limit={limit}\n"
+                f"attempted={attempted} sent={sent}"
+            ),
+        )
+        return
+
+    raise OutreachOpsError(f"Unknown outreach subcommand `{sub}`. Use `{CONFIG.command_prefix} outreach help`.")
+
+
+async def _handle_do(message: discord.Message, args: str) -> None:
+    text = (args or "").strip()
+    if not text:
+        raise OutreachOpsError("Usage: do <freeform request>")
+
+    lower = text.lower()
+    # Heuristic parser for the common request shape.
+    count = 50
+    m = re.search(r"\\b(\\d{1,4})\\b", lower)
+    if m and m.group(1).isdigit():
+        count = int(m.group(1))
+
+    if "housing" not in lower and "hotel" not in lower and "accommodation" not in lower:
+        raise OutreachOpsError(
+            "For now, `do` only supports housing sponsor outreach. "
+            "Try: `!kiroku do generate a list of 100 housing sponsors and draft emails`."
+        )
+
+    await _send_chunks(message.channel, f"Running outreach pipeline (housing, count={count}) ...")
+    leads_path = await outreach.generate_housing_leads(count, city=CONFIG.outreach_cohort_city or "Tokyo", country="Japan")
+    outbox_path = outreach.draft_housing_emails(leads_path)
+    await _send_chunks(
+        message.channel,
+        (
+            f"Done.\n"
+            f"- Leads: {leads_path.name}\n"
+            f"- Draft outbox: {outbox_path.name}\n"
+            "\n"
+            "Next steps:\n"
+            "1) Review + set approved=yes for the rows you want to email.\n"
+            f"2) Dry-run: {CONFIG.command_prefix} outreach send {outbox_path.name} --limit 5 --dry-run\n"
+            f"3) Send: {CONFIG.command_prefix} outreach send {outbox_path.name} --limit 5 --send --confirm SEND"
+        ),
+    )
+    await message.channel.send(file=discord.File(str(leads_path)))
+    await message.channel.send(file=discord.File(str(outbox_path)))
+
 
 async def _dispatch_command(message: discord.Message, command: str, args: str) -> None:
     cmd = command.lower().strip()
@@ -408,6 +641,10 @@ async def _dispatch_command(message: discord.Message, command: str, args: str) -
             await _handle_pr(message, args)
         elif cmd == "run":
             await _handle_run(message, args)
+        elif cmd == "outreach":
+            await _handle_outreach(message, args)
+        elif cmd == "do":
+            await _handle_do(message, args)
         return
 
     await _send_chunks(message.channel, f"Unknown command `{cmd}`. Use `{CONFIG.command_prefix} help`.")
@@ -456,7 +693,7 @@ async def on_message(message: discord.Message) -> None:
     try:
         async with message.channel.typing():
             await _dispatch_command(message, command, args)
-    except CodeOpsError as exc:
+    except (CodeOpsError, OutreachOpsError) as exc:
         msg = str(exc)
         m = re.search(r"#(\d+)", f"{command} {args}")
         if m and m.group(1).isdigit():

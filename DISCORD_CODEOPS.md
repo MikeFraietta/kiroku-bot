@@ -79,3 +79,14 @@ Use:
 ```
 
 to get your `user_id`, current `channel_id`, and `guild_id`.
+
+## Outreach ops (lead gen + email)
+
+```text
+!kiroku outreach help
+!kiroku outreach config
+!kiroku outreach generate housing 100
+!kiroku outreach draft leads-housing-Tokyo-YYYYMMDD-HHMMSS.csv
+!kiroku outreach send outbox-housing-YYYYMMDD-HHMMSS.csv --limit 5 --dry-run
+!kiroku outreach send outbox-housing-YYYYMMDD-HHMMSS.csv --limit 5 --send --confirm SEND
+```
