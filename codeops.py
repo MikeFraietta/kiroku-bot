@@ -556,9 +556,10 @@ class CodeOps:
 
 def parse_task_id(value: str) -> int:
     cleaned = str(value or "").strip()
-    if not cleaned.isdigit():
-        raise CodeOpsError("Task ID must be a number.")
-    return int(cleaned)
+    m = re.match(r"^#?(\\d+)$", cleaned)
+    if not m:
+        raise CodeOpsError("Task ID must be a number (example: `1` or `#1`).")
+    return int(m.group(1))
 
 
 def parse_title_and_instructions(raw: str) -> tuple[str, str]:
