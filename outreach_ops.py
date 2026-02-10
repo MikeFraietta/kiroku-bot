@@ -232,6 +232,7 @@ class OutreachEmailDraft:
     to_email: str
     subject: str
     body: str
+    contact_url: str = ""
     approved: str = "no"
     sent_at: str = ""
     last_error: str = ""
@@ -242,6 +243,7 @@ class OutreachEmailDraft:
             "company": self.company,
             "domain": self.domain,
             "to_email": self.to_email,
+            "contact_url": self.contact_url,
             "subject": self.subject,
             "body": self.body,
             "approved": self.approved,
@@ -279,7 +281,14 @@ class OutreachOps:
     def config_summary(self) -> str:
         search_ok = False
         provider = (self.config.search_provider or "").strip().lower()
-        if provider == "serpapi":
+        if provider in {"", "seed", "none"}:
+            seed_path = (self.config.website_dir.parent / "seeds" / "housing_sponsors.csv").resolve()
+            if seed_path.exists():
+                try:
+                    search_ok = bool(self._read_csv(seed_path))
+                except Exception:
+                    search_ok = False
+        elif provider == "serpapi":
             search_ok = bool(self.config.serpapi_api_key)
         elif provider == "bing":
             search_ok = bool(self.config.bing_api_key)
@@ -300,6 +309,8 @@ class OutreachOps:
 
     def _search_client(self) -> SearchClient:
         provider = (self.config.search_provider or "").strip().lower()
+        if provider in {"", "seed", "none"}:
+            raise OutreachOpsError("Search is disabled (SEARCH_PROVIDER=seed).")
         if provider == "serpapi":
             if not self.config.serpapi_api_key:
                 raise OutreachOpsError("SERPAPI_API_KEY is missing.")
@@ -308,7 +319,7 @@ class OutreachOps:
             if not self.config.bing_api_key:
                 raise OutreachOpsError("BING_SEARCH_API_KEY is missing.")
             return BingWebSearchClient(self.config.bing_api_key)
-        raise OutreachOpsError("SEARCH_PROVIDER must be set to `serpapi` or `bing`.")
+        raise OutreachOpsError("SEARCH_PROVIDER must be set to `seed`, `serpapi`, or `bing`.")
 
     def _validate_draft_config(self) -> None:
         missing: list[str] = []
@@ -360,13 +371,34 @@ class OutreachOps:
                 if not html and lead.website_url and lead.website_url != root:
                     html = await self._fetch_text(session, lead.website_url)
                 emails = _extract_emails(html)
-                lead.contact_email = lead.contact_email or _pick_best_email(emails)
                 lead.contact_url = lead.contact_url or _find_contact_url(html, root)
+                lead.contact_email = lead.contact_email or _pick_best_email(emails)
+
+                # If we found a contact URL, fetch it as a second pass and try again.
+                if not lead.contact_email and lead.contact_url:
+                    contact_html = await self._fetch_text(session, lead.contact_url)
+                    contact_emails = _extract_emails(contact_html)
+                    lead.contact_email = lead.contact_email or _pick_best_email(contact_emails)
         return leads
 
     async def generate_housing_leads(self, count: int, *, city: str = "Tokyo", country: str = "Japan") -> Path:
         if count <= 0:
             raise OutreachOpsError("count must be > 0")
+
+        provider = (self.config.search_provider or "").strip().lower()
+        if provider in {"", "seed", "none"}:
+            leads = self._seed_housing_leads(city=city, country=country)
+            if len(leads) < count:
+                raise OutreachOpsError(
+                    f"Seed list too small: have {len(leads)} leads, need {count}. "
+                    "Add more rows to `seeds/housing_sponsors.csv`."
+                )
+            leads = leads[:count]
+            await self._enrich_contact(leads)
+            ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+            out_path = self.config.state_dir / f"leads-housing-{_safe_filename(city)}-{ts}.csv"
+            self._write_csv(out_path, [l.to_row() for l in leads])
+            return out_path
 
         search = self._search_client()
 
@@ -424,6 +456,46 @@ class OutreachOps:
         out_path = self.config.state_dir / f"leads-housing-{_safe_filename(city)}-{ts}.csv"
         self._write_csv(out_path, [l.to_row() for l in leads])
         return out_path
+
+    def _seed_housing_leads(self, *, city: str, country: str) -> list[OutreachLead]:
+        seed_path = (self.config.website_dir.parent / "seeds" / "housing_sponsors.csv").resolve()
+        if not seed_path.exists():
+            raise OutreachOpsError(f"Missing seed file: {seed_path}")
+
+        rows = self._read_csv(seed_path)
+        leads: list[OutreachLead] = []
+        seen: set[str] = set()
+        for row in rows:
+            domain = (row.get("domain") or "").strip().lower()
+            website_url = (row.get("website_url") or "").strip()
+            company = (row.get("company") or "").strip()
+            if not domain:
+                domain = _normalize_domain(website_url)
+            if not domain or domain in seen:
+                continue
+            seen.add(domain)
+
+            leads.append(
+                OutreachLead(
+                    company=company or _pick_company_name(company, domain),
+                    domain=domain,
+                    website_url=website_url or f"https://{domain}",
+                    category="housing",
+                    contact_email=(row.get("contact_email") or "").strip(),
+                    contact_url=(row.get("contact_url") or "").strip(),
+                    country=(row.get("country") or "").strip() or country,
+                    city=(row.get("city") or "").strip() or city,
+                    source_query="seed:housing_sponsors.csv",
+                    source_url=website_url or f"https://{domain}",
+                    snippet="",
+                    notes=(row.get("notes") or "").strip(),
+                    approved="no",
+                )
+            )
+
+        if not leads:
+            raise OutreachOpsError(f"No valid seed rows found in {seed_path.name}.")
+        return leads
 
     def _read_text(self, path: Path) -> str:
         try:
@@ -488,8 +560,7 @@ class OutreachOps:
         drafts: list[OutreachEmailDraft] = []
         for idx, lead in enumerate(leads, start=1):
             to_email = lead.get("contact_email") or ""
-            if not to_email:
-                continue
+            contact_url = lead.get("contact_url") or ""
             values = {
                 "first_name": "there",
                 "title": "",
@@ -511,6 +582,7 @@ class OutreachOps:
                     company=lead.get("company") or "",
                     domain=lead.get("domain") or "",
                     to_email=to_email,
+                    contact_url=contact_url,
                     subject=subject,
                     body=body,
                     approved="no",
@@ -518,7 +590,7 @@ class OutreachOps:
             )
 
         if not drafts:
-            raise OutreachOpsError("No draftable leads found (missing contact_email).")
+            raise OutreachOpsError("No leads found (empty leads CSV).")
 
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
         out_path = self.config.state_dir / f"outbox-housing-{ts}.csv"
@@ -534,9 +606,16 @@ class OutreachOps:
             draft_id = (row.get("draft_id") or "").strip() or "?"
             company = (row.get("company") or "").strip() or "Unknown"
             to_email = (row.get("to_email") or "").strip()
+            contact_url = (row.get("contact_url") or "").strip()
             approved = ((row.get("approved") or "").strip() or "no").lower()
             sent_at = (row.get("sent_at") or "").strip() or "-"
-            lines.append(f"{draft_id}. {company} <{to_email}> approved={approved} sent_at={sent_at}")
+            if to_email:
+                lines.append(f"{draft_id}. {company} <{to_email}> approved={approved} sent_at={sent_at}")
+            else:
+                url_preview = contact_url
+                if len(url_preview) > 72:
+                    url_preview = url_preview[:69] + "..."
+                lines.append(f"{draft_id}. {company} <no-email> contact_url={url_preview or '-'} approved={approved} sent_at={sent_at}")
             if len(lines) >= limit:
                 break
         if not lines:
@@ -600,11 +679,19 @@ class OutreachOps:
             server.login(self.config.smtp_user, self.config.smtp_password)
             server.send_message(msg)
 
-    def send_outbox(self, outbox_csv: Path, *, limit: int = 10, dry_run: bool = True, approved_only: bool = True) -> tuple[int, int, Path]:
+    def send_outbox(
+        self,
+        outbox_csv: Path,
+        *,
+        limit: int = 10,
+        dry_run: bool = True,
+        approved_only: bool = True,
+    ) -> tuple[int, int, int, Path]:
         rows = self._read_csv(outbox_csv)
         updated: list[dict[str, str]] = []
         attempted = 0
         sent = 0
+        skipped_missing_email = 0
 
         for row in rows:
             row = dict(row)
@@ -617,6 +704,13 @@ class OutreachOps:
                 updated.append(row)
                 continue
             if attempted >= limit:
+                updated.append(row)
+                continue
+
+            to_email = (row.get("to_email") or "").strip()
+            if not to_email:
+                row["last_error"] = "missing to_email"
+                skipped_missing_email += 1
                 updated.append(row)
                 continue
 
@@ -633,4 +727,4 @@ class OutreachOps:
             updated.append(row)
 
         self._write_csv(outbox_csv, updated)
-        return attempted, sent, outbox_csv
+        return attempted, sent, skipped_missing_email, outbox_csv

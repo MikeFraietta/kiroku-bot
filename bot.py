@@ -737,7 +737,7 @@ async def _handle_outreach(message: discord.Message, args: str) -> None:
         if not dry_run and confirm.strip().upper() != "SEND":
             raise OutreachOpsError("Refusing to send without `--confirm SEND`.")
 
-        attempted, sent, _ = outreach.send_outbox(
+        attempted, sent, skipped_missing_email, _ = outreach.send_outbox(
             outbox_path,
             limit=limit,
             dry_run=dry_run,
@@ -748,7 +748,7 @@ async def _handle_outreach(message: discord.Message, args: str) -> None:
             (
                 f"Outbox processed: {outbox_path.name}\n"
                 f"mode={'dry-run' if dry_run else 'send'} approved_only={'yes' if approved_only else 'no'} limit={limit}\n"
-                f"attempted={attempted} sent={sent}"
+                f"attempted={attempted} sent={sent} skipped_missing_email={skipped_missing_email}"
             ),
         )
         await message.channel.send(file=discord.File(str(outbox_path)))
