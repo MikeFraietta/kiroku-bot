@@ -135,7 +135,7 @@ ops = CodeOps(
 )
 
 
-READ_COMMANDS = {"help", "status", "tasks", "show", "preview", "repo", "id"}
+READ_COMMANDS = {"help", "status", "tasks", "show", "preview", "repo", "id", "ping"}
 MUTATING_COMMANDS = {"task", "plan", "diff", "apply", "commit", "pr", "run"}
 
 
@@ -190,6 +190,7 @@ async def _handle_help(message: discord.Message) -> None:
     text = (
         f"Kiroku commands ({CONFIG.command_prefix} ...):\n"
         "- help\n"
+        "- ping\n"
         "- status\n"
         "- id (show your user/channel/guild IDs)\n"
         "- repo\n"
@@ -205,6 +206,10 @@ async def _handle_help(message: discord.Message) -> None:
         "- run <id> (plan+diff+apply+commit+pr)\n"
     )
     await _send_chunks(message.channel, text)
+
+
+async def _handle_ping(message: discord.Message) -> None:
+    await message.reply("pong")
 
 
 async def _handle_status(message: discord.Message) -> None:
@@ -362,6 +367,8 @@ async def _dispatch_command(message: discord.Message, command: str, args: str) -
     if cmd in READ_COMMANDS:
         if cmd == "help":
             await _handle_help(message)
+        elif cmd == "ping":
+            await _handle_ping(message)
         elif cmd == "status":
             await _handle_status(message)
         elif cmd == "tasks":
