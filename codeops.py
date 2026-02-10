@@ -231,12 +231,45 @@ class CodeOps:
         tracked = set(self._run(["git", "ls-files"], check=True).splitlines())
         return [f for f in defaults if f in tracked][: self.config.max_context_files]
 
-    def _sanitize_patch(self, raw: str) -> str:
-        text = raw.strip()
-        if text.startswith("```"):
-            text = re.sub(r"^```(?:diff)?\n", "", text)
-            text = re.sub(r"\n```$", "", text)
+    def _looks_like_unified_diff(self, text: str) -> bool:
+        candidate = (text or "").strip()
+        if not candidate:
+            return False
+        if re.search(r"(?m)^diff --git\\s", candidate):
+            return True
+        if re.search(r"(?m)^---\\s", candidate) and re.search(r"(?m)^\\+\\+\\+\\s", candidate):
+            return True
+        return False
+
+    def _extract_unified_diff(self, raw: str) -> str:
+        text = (raw or "").replace("\r\n", "\n").strip()
+        if not text:
+            return ""
+
+        # Prefer extracting a fenced diff block if present.
+        fenced = re.findall(r"```(?:diff)?\\s*\\n(.*?)```", text, flags=re.S)
+        for block in fenced:
+            block = block.strip()
+            if self._looks_like_unified_diff(block):
+                return block.strip() + "\n"
+
+        # Otherwise, extract from the first diff marker.
+        m = re.search(r"(?m)^diff --git\\s", text)
+        if m:
+            return text[m.start() :].strip() + "\n"
+        m = re.search(r"(?m)^---\\sa/", text)
+        if m:
+            return text[m.start() :].strip() + "\n"
+
+        # Fallback to returning the full text (caller can validate and raise).
         return text.strip() + "\n"
+
+    def _is_placeholder_task(self, task: CodeTask) -> bool:
+        def _is_placeholder(s: str) -> bool:
+            s = (s or "").strip()
+            return bool(re.fullmatch(r"<[^>]+>", s))
+
+        return _is_placeholder(task.title) or _is_placeholder(task.instructions) or "<instructions>" in task.instructions
 
     def _remote_slug(self) -> str:
         remote_url = self._run(["git", "remote", "get-url", self.config.remote_name], check=True)
@@ -292,6 +325,12 @@ class CodeOps:
     async def plan_task(self, task_id: int) -> CodeTask:
         async with self._state_lock:
             task = self._get_task_unlocked(task_id)
+            if self._is_placeholder_task(task):
+                raise CodeOpsError(
+                    "Task looks like placeholders (`<title>` / `<instructions>`). "
+                    "Create a new task with real instructions, e.g. "
+                    "`!kiroku task Add ping command || Add a read command ping that replies pong.`"
+                )
             files = self._infer_files_for_task(task)
             task.files = files
 
@@ -309,6 +348,11 @@ class CodeOps:
     async def patch_task(self, task_id: int) -> CodeTask:
         async with self._state_lock:
             task = self._get_task_unlocked(task_id)
+            if self._is_placeholder_task(task):
+                raise CodeOpsError(
+                    "Task looks like placeholders (`<title>` / `<instructions>`). "
+                    "Create a new task with real instructions, then run diff/run again."
+                )
             if not task.plan:
                 files = self._infer_files_for_task(task)
                 task.plan = self._fallback_plan(task, files)
@@ -319,10 +363,24 @@ class CodeOps:
                     "No LLM provider configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in .env to enable patch generation."
                 )
 
-            patch = await self._llm_patch(task)
-            task.patch = self._sanitize_patch(patch)
-            if "diff --git" not in task.patch and "--- " not in task.patch:
-                raise CodeOpsError("Model output did not contain a valid unified diff.")
+            raw1 = await self._llm_patch(task, strict=False)
+            candidate = self._extract_unified_diff(raw1)
+
+            if not self._looks_like_unified_diff(candidate):
+                # Retry once with a stricter prompt if the model responded with prose.
+                raw2 = await self._llm_patch(task, strict=True)
+                candidate2 = self._extract_unified_diff(raw2)
+                if self._looks_like_unified_diff(candidate2):
+                    candidate = candidate2
+                else:
+                    preview = "\n".join((raw2 or "").strip().splitlines()[:20])
+                    raise CodeOpsError(
+                        "Model output did not contain a valid unified diff. "
+                        "Try narrowing scope and naming target files. "
+                        f"First lines of output:\n{preview}"
+                    )
+
+            task.patch = candidate
 
             task.status = TASK_STATUS_PATCHED
             task.updated_at = self._iso_now()
@@ -468,15 +526,23 @@ class CodeOps:
         )
         return await self._chat_completion(system, user)
 
-    async def _llm_patch(self, task: CodeTask) -> str:
+    async def _llm_patch(self, task: CodeTask, strict: bool) -> str:
         files = self._infer_files_for_task(task)
         context = self._build_context(files)
 
         system = (
             "You are an expert software engineer. "
             "Return ONLY a valid unified diff patch against the repository root. "
-            "Do not include markdown fences, explanations, or any text before/after the diff."
+            "Do not include markdown fences, explanations, or any text before/after the diff. "
+            "Your first line MUST start with `diff --git`."
         )
+        if strict:
+            system = (
+                "You are a patch generator. "
+                "Your entire response must be a valid unified diff patch. "
+                "The FIRST line MUST start with `diff --git`. "
+                "No prose, no markdown, no code fences."
+            )
         user = (
             f"Task title: {task.title}\n"
             f"Instructions:\n{task.instructions}\n\n"
@@ -581,4 +647,10 @@ def parse_title_and_instructions(raw: str) -> tuple[str, str]:
         raise CodeOpsError("Task title cannot be empty.")
     if not instructions:
         raise CodeOpsError("Task instructions cannot be empty.")
+    if re.fullmatch(r"<[^>]+>", title.strip()) or re.fullmatch(r"<[^>]+>", instructions.strip()):
+        raise CodeOpsError(
+            "It looks like you pasted placeholders (`<title>` / `<instructions>`). "
+            "Replace them with real text, e.g. "
+            "`!kiroku task Add ping command || Add a read command ping that replies pong.`"
+        )
     return title, instructions
