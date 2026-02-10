@@ -42,6 +42,7 @@ class BotConfig:
     anthropic_model: str
     anthropic_base_url: str
     anthropic_version: str
+    launch_agent_label: str
     outreach_state_dir: Path
     website_dir: Path
     outreach_sender_name: str
@@ -132,6 +133,7 @@ def load_config() -> BotConfig:
         anthropic_base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com").strip()
         or "https://api.anthropic.com",
         anthropic_version=os.getenv("ANTHROPIC_VERSION", "2023-06-01").strip() or "2023-06-01",
+        launch_agent_label=os.getenv("LAUNCH_AGENT_LABEL", "com.kiroku.bot").strip() or "com.kiroku.bot",
         outreach_state_dir=outreach_state_dir,
         website_dir=website_dir,
         outreach_sender_name=os.getenv("OUTREACH_SENDER_NAME", "").strip(),
@@ -200,7 +202,20 @@ outreach = OutreachOps(
 )
 
 READ_COMMANDS = {"help", "status", "tasks", "show", "preview", "repo", "id", "ping"}
-MUTATING_COMMANDS = {"task", "plan", "diff", "apply", "commit", "pr", "run", "outreach", "do"}
+MUTATING_COMMANDS = {
+    "task",
+    "plan",
+    "diff",
+    "apply",
+    "commit",
+    "pr",
+    "run",
+    "merge",
+    "deploy",
+    "ship",
+    "outreach",
+    "do",
+}
 
 
 def _is_admin_channel(channel_id: int) -> bool:
@@ -268,6 +283,9 @@ async def _handle_help(message: discord.Message) -> None:
         "- commit <id> [commit message]\n"
         "- pr <id>\n"
         "- run <id> (plan+diff+apply+commit+pr)\n"
+        "- merge <id> (merge task branch into main and push)\n"
+        "- deploy --confirm DEPLOY (pull main and restart bot)\n"
+        "- ship <id|title||instructions> --confirm SHIP (run+merge+deploy)\n"
         "- outreach help\n"
         "- do <freeform request> (shortcut for common outreach workflows)\n"
     )
@@ -425,6 +443,119 @@ async def _handle_run(message: discord.Message, args: str) -> None:
 
     task = await ops.publish_task(task_id)
     await _send_chunks(message.channel, f"5/5 published: {task.compare_url}")
+
+
+def _git_run(args: list[str]) -> str:
+    proc = subprocess.run(
+        ["git", "-C", str(CONFIG.repo_path), *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise CodeOpsError(proc.stderr.strip() or proc.stdout.strip() or "git command failed")
+    return proc.stdout.strip()
+
+
+def _ensure_clean_worktree() -> None:
+    dirty = _git_run(["status", "--porcelain"])
+    if dirty.strip():
+        raise CodeOpsError("Repo is dirty; refusing operation. Clean working tree first.")
+
+
+async def _handle_merge(message: discord.Message, args: str) -> None:
+    task_id = parse_task_id(args.strip())
+    _ensure_clean_worktree()
+    await _send_chunks(message.channel, f"Merging task #{task_id} into `{CONFIG.base_branch}` ...")
+    task = await ops.merge_task(task_id)
+    await _send_chunks(message.channel, f"Merged #{task.task_id} into `{CONFIG.base_branch}`.")
+
+
+async def _handle_deploy(message: discord.Message, args: str) -> None:
+    raw = (args or "").strip()
+    if raw.strip().upper() != "--CONFIRM DEPLOY":
+        raise CodeOpsError("Usage: deploy --confirm DEPLOY")
+
+    _ensure_clean_worktree()
+
+    await _send_chunks(
+        message.channel,
+        (
+            f"Deploying: pulling `{CONFIG.base_branch}` and restarting bot (launch agent `{CONFIG.launch_agent_label}`).\n"
+            "If the bot goes silent for a few seconds, that's expected."
+        ),
+    )
+
+    # Pull latest main before restart.
+    _git_run(["checkout", CONFIG.base_branch])
+    _git_run(["pull", "--ff-only", CONFIG.remote_name, CONFIG.base_branch])
+
+    # Kickstart after the reply is sent.
+    await asyncio.sleep(1.0)
+    label = f"gui/{os.getuid()}/{CONFIG.launch_agent_label}"
+    subprocess.Popen(["launchctl", "kickstart", "-k", label])
+
+
+def _strip_confirm_flag(raw: str, *, expected: str) -> tuple[str, bool]:
+    parts = (raw or "").split()
+    if "--confirm" not in parts:
+        return (raw or "").strip(), False
+    idx = parts.index("--confirm")
+    token = parts[idx + 1] if idx + 1 < len(parts) else ""
+    ok = token.strip().upper() == expected.upper()
+    kept = parts[:idx] + parts[idx + 2 :]
+    return " ".join(kept).strip(), ok
+
+
+async def _handle_ship(message: discord.Message, args: str) -> None:
+    stripped, ok = _strip_confirm_flag(args, expected="SHIP")
+    if not ok:
+        raise CodeOpsError("Refusing to ship without `--confirm SHIP`.")
+
+    _ensure_clean_worktree()
+
+    raw = stripped.strip()
+    if not raw:
+        raise CodeOpsError("Usage: ship <id|title> || <instructions> --confirm SHIP")
+
+    # Either ship an existing task id, or create a new task from the message.
+    first = raw.split()[0]
+    task_id: int
+    if re.match(r"^#?\\d+\\b", first):
+        task_id = parse_task_id(first)
+    else:
+        title, instructions = parse_title_and_instructions(raw)
+        task = await ops.create_task(
+            title=title,
+            instructions=instructions,
+            requested_by=str(message.author),
+            requested_by_id=str(message.author.id),
+        )
+        task_id = task.task_id
+        await _send_chunks(message.channel, f"Created {_task_summary_line(task)}")
+
+    await _send_chunks(message.channel, f"Shipping task #{task_id} (run+merge+deploy) ...")
+
+    task = await ops.plan_task(task_id)
+    await _send_chunks(message.channel, f"1/7 planned: {_task_summary_line(task)}")
+
+    task = await ops.patch_task(task_id)
+    await _send_chunks(message.channel, f"2/7 patch generated: lines={len(task.patch.splitlines())}")
+
+    task = await ops.apply_task(task_id)
+    await _send_chunks(message.channel, f"3/7 patch applied: {_task_summary_line(task)}")
+
+    task = await ops.commit_task(task_id)
+    await _send_chunks(message.channel, f"4/7 committed: sha={task.commit_sha}")
+
+    task = await ops.publish_task(task_id)
+    await _send_chunks(message.channel, f"5/7 published: {task.compare_url}")
+
+    task = await ops.merge_task(task_id)
+    await _send_chunks(message.channel, f"6/7 merged into `{CONFIG.base_branch}`")
+
+    await _send_chunks(message.channel, f"7/7 deploying (restart) ...")
+    await _handle_deploy(message, "--confirm DEPLOY")
 
 def _resolve_outreach_path(arg: str) -> Path:
     raw = (arg or "").strip()
@@ -711,6 +842,12 @@ async def _dispatch_command(message: discord.Message, command: str, args: str) -
             await _handle_pr(message, args)
         elif cmd == "run":
             await _handle_run(message, args)
+        elif cmd == "merge":
+            await _handle_merge(message, args)
+        elif cmd == "deploy":
+            await _handle_deploy(message, args)
+        elif cmd == "ship":
+            await _handle_ship(message, args)
         elif cmd == "outreach":
             await _handle_outreach(message, args)
         elif cmd == "do":

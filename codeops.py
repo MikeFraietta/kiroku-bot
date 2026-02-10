@@ -21,6 +21,7 @@ TASK_STATUS_PATCHED = "patched"
 TASK_STATUS_APPLIED = "applied"
 TASK_STATUS_COMMITTED = "committed"
 TASK_STATUS_PUBLISHED = "published"
+TASK_STATUS_MERGED = "merged"
 TASK_STATUS_FAILED = "failed"
 
 
@@ -481,6 +482,34 @@ class CodeOps:
                 f"{self.config.base_branch}...{task.branch}?expand=1"
             )
             task.status = TASK_STATUS_PUBLISHED
+            task.updated_at = self._iso_now()
+            task.last_error = ""
+            self._upsert_task(task)
+            return task
+
+    async def merge_task(self, task_id: int) -> CodeTask:
+        async with self._state_lock:
+            task = self._get_task_unlocked(task_id)
+            if not self._branch_exists(task.branch):
+                raise CodeOpsError(
+                    f"Task branch does not exist yet: {task.branch}. "
+                    "Run `apply` first to create the branch and apply the patch "
+                    "(or run `run` for the full pipeline)."
+                )
+
+            # Ensure base branch is up to date, then merge.
+            self._run(["git", "fetch", self.config.remote_name], check=True)
+            self._run(["git", "checkout", self.config.base_branch], check=True)
+            self._run(
+                ["git", "pull", "--ff-only", self.config.remote_name, self.config.base_branch],
+                check=True,
+            )
+
+            message = f"merge: task #{task.task_id}"
+            self._run(["git", "merge", "--no-ff", "-m", message, task.branch], check=True)
+            self._run(["git", "push", self.config.remote_name, self.config.base_branch], check=True)
+
+            task.status = TASK_STATUS_MERGED
             task.updated_at = self._iso_now()
             task.last_error = ""
             self._upsert_task(task)

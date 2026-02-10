@@ -58,6 +58,21 @@
 !kiroku run 1
 ```
 
+## Merge + Deploy (no GitHub UI)
+
+After a task is published, you can merge and deploy entirely from Discord:
+
+```text
+!kiroku merge 1
+!kiroku deploy --confirm DEPLOY
+```
+
+Or one command to run+merge+deploy:
+
+```text
+!kiroku ship Improve README || Rewrite README with setup + safety notes. --confirm SHIP
+```
+
 ## Troubleshooting
 
 - `Unauthorized`:
