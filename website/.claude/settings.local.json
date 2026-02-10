@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(env)",
+      "Bash(open \"/Users/kiroku/Desktop/website /index.html\")",
+      "Bash(for f in space-coworking-wide.jpeg space-coworking-session.jpeg event-speaker-tokyodome.jpeg event-presentation.jpeg tokyodome-calendar.jpeg event-panel-discussion.jpeg grand-opening-ceremony.jpeg grand-opening-crowd.jpeg space-casual-working.jpeg kiroku-mac-mini.jpeg community-group-photo.JPG team-dinner-casual.jpeg team-dinner-group.JPG meetsport-exterior-night.jpg grand-opening-sake-group.png grand-opening-sake-breaking.png kiroku.png kaizen_currents.png enxross_logo.jpg mike.jpeg perm.jpeg sho.jpeg ray.jpeg rabi.jpeg anna.jpeg)",
+      "Bash(do [ -f \"$f\" ])",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(open:*)",
+      "WebFetch(domain:res.klook.com)"
+    ]
+  }
+}

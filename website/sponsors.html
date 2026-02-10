@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>enXross - Sponsor Track Selector</title>
+    <meta name="description" content="Select the right sponsorship track for enXross. Route AI, L1 blockchain, and XR sponsor decision-makers to the right executive brief.">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+    <script defer src="analytics.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at 15% 15%, rgba(0,255,255,0.08) 0%, transparent 38%),
+                        radial-gradient(circle at 85% 0%, rgba(255,0,255,0.08) 0%, transparent 35%),
+                        #070a11;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.jp-mode { font-family: 'Noto Sans JP', 'Poppins', sans-serif; }
+        .lang-jp { display: none; }
+        body.jp-mode .lang-en { display: none; }
+        body.jp-mode .lang-jp { display: block; }
+        body.jp-mode span.lang-en { display: none; }
+        body.jp-mode span.lang-jp { display: inline; }
+        span.lang-jp { display: none; }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(8, 11, 18, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            padding: 0.8rem 0;
+        }
+        .nav-container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-main { height: 36px; width: auto; }
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            list-style: none;
+        }
+        .nav-menu a {
+            color: rgba(255,255,255,0.74);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        .nav-menu a:hover { color: #00ffff; }
+        .lang-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.35);
+            color: #fff;
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .lang-btn:hover { border-color: #00ffff; color: #00ffff; }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero {
+            padding: 90px 0 36px;
+            text-align: center;
+        }
+        .hero-label {
+            display: inline-block;
+            font-size: 0.75rem;
+            letter-spacing: 2.6px;
+            text-transform: uppercase;
+            color: #00ffff;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-size: 2.9rem;
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+        .hero p {
+            max-width: 760px;
+            margin: 0 auto;
+            color: rgba(255,255,255,0.62);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        .hero-note {
+            margin-top: 10px;
+            font-size: 0.86rem;
+            color: rgba(0,255,255,0.88);
+        }
+
+        .selector {
+            padding: 32px 0 72px;
+        }
+        .selector-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+        .track-card {
+            border-radius: 16px;
+            padding: 24px 22px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+        }
+        .track-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+        .track-tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 14px;
+            font-weight: 700;
+        }
+        .track-card p {
+            color: rgba(255,255,255,0.62);
+            font-size: 0.92rem;
+            line-height: 1.65;
+            min-height: 118px;
+        }
+        .fit-list {
+            margin-top: 14px;
+            list-style: none;
+            display: grid;
+            gap: 8px;
+        }
+        .fit-list li {
+            font-size: 0.84rem;
+            color: rgba(255,255,255,0.78);
+            padding-left: 18px;
+            position: relative;
+        }
+        .fit-list li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .card-actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .card-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 10px 14px;
+            border: 1px solid transparent;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .card-btn:hover { transform: translateY(-2px); }
+
+        .ai { border-top: 3px solid #ff5ad9; }
+        .ai .track-tag { color: #ff8ee8; }
+        .ai .fit-list li::before { background: #ff75e1; }
+        .ai .card-btn {
+            background: linear-gradient(135deg, #ff65df, #a73aff);
+            color: #fff;
+        }
+
+        .l1 { border-top: 3px solid #00e4ff; }
+        .l1 .track-tag { color: #6ef4ff; }
+        .l1 .fit-list li::before { background: #3feefe; }
+        .l1 .card-btn {
+            background: linear-gradient(135deg, #3ff2ff, #0ba5dc);
+            color: #002437;
+        }
+
+        .xr { border-top: 3px solid #ffe45f; }
+        .xr .track-tag { color: #ffe98f; }
+        .xr .fit-list li::before { background: #ffe86c; }
+        .xr .card-btn {
+            background: linear-gradient(135deg, #ffe86c, #ffb347);
+            color: #2a1900;
+        }
+
+        .help-strip {
+            border-top: 1px solid rgba(255,255,255,0.12);
+            padding: 32px 0 48px;
+        }
+        .help-shell {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 14px;
+            padding: 22px;
+            text-align: center;
+        }
+        .help-shell h4 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .help-shell p {
+            color: rgba(255,255,255,0.62);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+        .help-shell a {
+            display: inline-block;
+            margin-top: 12px;
+            color: #00ffff;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(0,255,255,0.35);
+            padding-bottom: 2px;
+        }
+
+        .footer {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding: 36px 0 44px;
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 1000px) {
+            .selector-grid { grid-template-columns: 1fr; }
+            .track-card p { min-height: 0; }
+            .hero h1 { font-size: 2.2rem; }
+        }
+
+        @media (max-width: 640px) {
+            .hero { padding-top: 72px; }
+            .hero h1 { font-size: 1.85rem; }
+            .nav-menu li { display: none; }
+            .nav-menu li:last-child,
+            .nav-menu li:nth-last-child(2) { display: inline-flex; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html"><img src="images/enxross_logo.jpg" alt="enXross" class="logo-main"></a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="dao.html">DAO</a></li>
+                <li><a href="join-discord.html?src=sponsors-selector" target="_blank" rel="noopener noreferrer">Discord</a></li>
+                <li><button id="lang-toggle" class="lang-btn">JP</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <span class="hero-label">
+                <span class="lang-en">Sponsor Routing</span>
+                <span class="lang-jp">スポンサー導線</span>
+            </span>
+            <h1>
+                <span class="lang-en">Choose the Right Official Partner Track</span>
+                <span class="lang-jp">最適な公式パートナートラックを選択</span>
+            </h1>
+            <p>
+                <span class="lang-en">Use this selector to route sponsor decision-makers to the most relevant executive brief. Each track has dedicated language, KPI framing, and inquiry flow.</span>
+                <span class="lang-jp">このセレクターで、スポンサー意思決定者を最適な経営向けブリーフに誘導できます。各トラックごとに訴求文、KPI設計、問い合わせ導線を最適化しています。</span>
+            </p>
+            <p class="hero-note">
+                <span class="lang-en">Auto-route supported via URL params: <code>?track=ai</code>, <code>?track=l1</code>, <code>?track=xr</code>.</span>
+                <span class="lang-jp">URLパラメータによる自動振り分け対応: <code>?track=ai</code>, <code>?track=l1</code>, <code>?track=xr</code></span>
+            </p>
+        </div>
+    </section>
+
+    <section class="selector">
+        <div class="container selector-grid">
+            <article class="track-card ai">
+                <span class="track-tag">
+                    <span class="lang-en">AI Model Track</span>
+                    <span class="lang-jp">AIモデルトラック</span>
+                </span>
+                <h3>AI</h3>
+                <p>
+                    <span class="lang-en">For foundation model, API, and developer platform teams focused on adoption, usage quality, and regional category leadership.</span>
+                    <span class="lang-jp">採用拡大、利用品質、地域カテゴリリーダーシップを重視する基盤モデル/API/開発者プラットフォーム向け。</span>
+                </p>
+                <ul class="fit-list">
+                    <li><span class="lang-en">Default intelligence stack positioning</span><span class="lang-jp">標準インテリジェンス基盤としての位置づけ</span></li>
+                    <li><span class="lang-en">AI KPI-driven inquiry form</span><span class="lang-jp">AI KPI起点の問い合わせフォーム</span></li>
+                    <li><span class="lang-en">Executive review copy for product and legal</span><span class="lang-jp">プロダクト・法務向け経営訴求</span></li>
+                </ul>
+                <div class="card-actions">
+                    <a href="sponsors-ai.html" class="card-btn" data-track-event="selector_open_ai" data-track-label="sponsor-selector-ai">
+                        <span class="lang-en">Open AI Brief</span>
+                        <span class="lang-jp">AIブリーフを開く</span>
+                    </a>
+                </div>
+            </article>
+
+            <article class="track-card l1">
+                <span class="track-tag">
+                    <span class="lang-en">Blockchain Track</span>
+                    <span class="lang-jp">ブロックチェーントラック</span>
+                </span>
+                <h3>L1 Chain</h3>
+                <p>
+                    <span class="lang-en">For L1 foundations and ecosystem teams targeting wallet growth, contract deployment activity, and on-chain infrastructure ownership.</span>
+                    <span class="lang-jp">ウォレット成長、コントラクト稼働、オンチェーン基盤の主導権獲得を狙うL1財団・エコシステム向け。</span>
+                </p>
+                <ul class="fit-list">
+                    <li><span class="lang-en">Default on-chain rail positioning</span><span class="lang-jp">標準オンチェーン基盤としての位置づけ</span></li>
+                    <li><span class="lang-en">L1 adoption KPI framing</span><span class="lang-jp">L1採用KPIに合わせた訴求</span></li>
+                    <li><span class="lang-en">Foundation and BD decision-maker language</span><span class="lang-jp">財団・事業開発向けの意思決定訴求</span></li>
+                </ul>
+                <div class="card-actions">
+                    <a href="sponsors-l1.html" class="card-btn" data-track-event="selector_open_l1" data-track-label="sponsor-selector-l1">
+                        <span class="lang-en">Open L1 Brief</span>
+                        <span class="lang-jp">L1ブリーフを開く</span>
+                    </a>
+                </div>
+            </article>
+
+            <article class="track-card xr">
+                <span class="track-tag">
+                    <span class="lang-en">XR Track</span>
+                    <span class="lang-jp">XRトラック</span>
+                </span>
+                <h3>XR Platform</h3>
+                <p>
+                    <span class="lang-en">For hardware, SDK, and engine teams focused on immersive adoption, creator enablement, and visitor-facing spatial experiences.</span>
+                    <span class="lang-jp">没入体験の採用、クリエイター支援、来場者向け空間体験を重視するハードウェア/SDK/エンジン向け。</span>
+                </p>
+                <ul class="fit-list">
+                    <li><span class="lang-en">Default spatial stack positioning</span><span class="lang-jp">標準空間スタックとしての位置づけ</span></li>
+                    <li><span class="lang-en">XR session and engagement KPI framing</span><span class="lang-jp">XRセッション・エンゲージメントKPI訴求</span></li>
+                    <li><span class="lang-en">Executive narrative for immersive ROI</span><span class="lang-jp">没入体験ROI向け経営訴求</span></li>
+                </ul>
+                <div class="card-actions">
+                    <a href="sponsors-xr.html" class="card-btn" data-track-event="selector_open_xr" data-track-label="sponsor-selector-xr">
+                        <span class="lang-en">Open XR Brief</span>
+                        <span class="lang-jp">XRブリーフを開く</span>
+                    </a>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="help-strip">
+        <div class="container">
+            <div class="help-shell">
+                <h4><span class="lang-en">Need a recommendation?</span><span class="lang-jp">どのトラックが最適か迷っていますか？</span></h4>
+                <p>
+                    <span class="lang-en">Share your sponsor profile and we will route you to the best-fit brief before the first call.</span>
+                    <span class="lang-jp">スポンサーの状況を共有いただければ、初回面談前に最適なブリーフへご案内します。</span>
+                </p>
+                <a href="mailto:mariam@empiredao.xyz?subject=enXross%20Sponsor%20Routing%20Help" data-track-event="selector_email_help" data-track-label="sponsor-selector-help-email">
+                    <span class="lang-en">Contact sponsorship team</span>
+                    <span class="lang-jp">スポンサー担当に連絡する</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 enXross DAO</p>
+        </div>
+    </footer>
+
+    <script>
+        const langToggle = document.getElementById('lang-toggle');
+        const body = document.body;
+        const storedLang = localStorage.getItem('site-language');
+
+        if (storedLang === 'jp') {
+            body.classList.add('jp-mode');
+            langToggle.textContent = 'EN';
+        }
+
+        langToggle.addEventListener('click', () => {
+            body.classList.toggle('jp-mode');
+            if (body.classList.contains('jp-mode')) {
+                langToggle.textContent = 'EN';
+                localStorage.setItem('site-language', 'jp');
+            } else {
+                langToggle.textContent = 'JP';
+                localStorage.setItem('site-language', 'en');
+            }
+        });
+
+        (function autoRouteSponsorTrack() {
+            const routeMap = {
+                ai: 'sponsors-ai.html',
+                model: 'sponsors-ai.html',
+                llm: 'sponsors-ai.html',
+                blockchain: 'sponsors-l1.html',
+                l1: 'sponsors-l1.html',
+                chain: 'sponsors-l1.html',
+                web3: 'sponsors-l1.html',
+                xr: 'sponsors-xr.html',
+                ar: 'sponsors-xr.html',
+                vr: 'sponsors-xr.html',
+                spatial: 'sponsors-xr.html'
+            };
+
+            const params = new URLSearchParams(window.location.search);
+            const keys = ['track', 'persona', 'vertical', 'type'];
+            let target = null;
+
+            for (const key of keys) {
+                const raw = (params.get(key) || '').toLowerCase().trim();
+                if (raw && routeMap[raw]) {
+                    target = routeMap[raw];
+                    break;
+                }
+            }
+
+            if (!target && window.location.hash) {
+                const hashKey = window.location.hash.replace('#', '').toLowerCase().trim();
+                if (routeMap[hashKey]) {
+                    target = routeMap[hashKey];
+                }
+            }
+
+            if (!target) return;
+
+            const forwardParams = new URLSearchParams(window.location.search);
+            keys.forEach((key) => forwardParams.delete(key));
+
+            const query = forwardParams.toString();
+            const nextUrl = query ? `${target}?${query}` : target;
+            window.location.replace(nextUrl);
+        })();
+    </script>
+</body>
+</html>

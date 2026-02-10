@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>enXross - Startup Residency at Tokyo Dome City</title>
+    <meta name="description" content="enXross is a six-month startup residency inside Tokyo Dome City. Build, test, and launch AI, XR, and Web3 products with 40 million annual visitors.">
+    <meta name="keywords" content="enXross, Tokyo Dome City, startup accelerator, innovation hub, Tokyo, Web3, AI, XR, entertainment tech, startup residency, EmpireDAO, Japan startup, Tokyo startup program, Kaizen Currents">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="enXross - Startup Residency at Tokyo Dome City">
+    <meta property="og:description" content="Build, test, and launch your startup inside one of Tokyo's busiest entertainment districts. First cohort now in progress.">
+    <meta property="og:image" content="https://tokyodomecity2026.com/images/grand-opening-sake-group.png">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+    <script defer src="analytics.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        body.jp-mode {
+            font-family: 'Noto Sans JP', 'Poppins', sans-serif;
+        }
+
+        .lang-jp { display: none; }
+        body.jp-mode .lang-en { display: none; }
+        body.jp-mode .lang-jp { display: block; }
+        body.jp-mode span.lang-en { display: none; }
+        body.jp-mode span.lang-jp { display: inline; }
+        span.lang-jp { display: none; }
+
+        /* ── Navbar ── */
+        .navbar {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.15);
+            padding: 0.8rem 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-main {
+            height: 36px;
+            width: auto;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #00ffff;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn:hover {
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            position: relative;
+            height: 90vh;
+            min-height: 600px;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .hero-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 38%;
+            transform: scale(1.03);
+        }
+
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(10, 10, 10, 0.2) 0%,
+                rgba(10, 10, 10, 0.4) 40%,
+                rgba(10, 10, 10, 0.85) 75%,
+                rgba(10, 10, 10, 1) 100%
+            );
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+            width: 100%;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            background: rgba(0, 255, 255, 0.15);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.8rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            max-width: 700px;
+        }
+
+        .hero-sub {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 550px;
+            line-height: 1.6;
+            margin-bottom: 35px;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 40px;
+            background: #5865F2;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .hero-cta:hover {
+            background: #4752C4;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(88, 101, 242, 0.4);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 50px;
+            margin-top: 50px;
+        }
+
+        .hero-stat-num {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #00ffff;
+        }
+
+        .hero-stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 2px;
+        }
+
+        /* ── Section layout ── */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            padding: 100px 0;
+        }
+
+        .section-label {
+            display: inline-block;
+            color: #00ffff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .section-desc {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 650px;
+            line-height: 1.7;
+            margin-bottom: 50px;
+        }
+
+        /* ── Photo Grid ── */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 170px;
+            gap: 8px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .photo-grid img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.4s ease;
+        }
+
+        .photo-grid img:hover {
+            transform: scale(1.03);
+        }
+
+        .space-coworking-feature {
+            object-position: center 52%;
+        }
+
+        .space-speaker-photo {
+            object-position: 63% 56%;
+        }
+
+        .space-panel-photo {
+            object-position: center 55%;
+        }
+
+        .space-casual-photo {
+            object-position: center 57%;
+        }
+
+        .photo-grid .photo-feature {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .photo-grid .photo-wide {
+            grid-column: span 3;
+        }
+
+        .photo-grid .photo-tall {
+            grid-row: span 2;
+            height: 100%;
+        }
+
+        /* ── The Space section ── */
+        .space-section {
+            background: linear-gradient(180deg, #0a0a0a 0%, #0f1923 100%);
+        }
+
+        .space-text-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 50px;
+        }
+
+        .space-visual-stack {
+            display: grid;
+            gap: 12px;
+            grid-template-rows: minmax(280px, 1fr) auto;
+        }
+
+        .space-primary-photo {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            object-fit: cover;
+            object-position: center 47%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+        }
+
+        .space-secondary-photo {
+            width: 100%;
+            border-radius: 14px;
+            object-fit: cover;
+            object-position: center 38%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .space-feature {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .space-feature-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .space-feature h4 {
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .space-feature p {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.5;
+        }
+
+        /* ── Grand Opening ── */
+        .opening-section {
+            background: #0f1923;
+        }
+
+        .opening-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .opening-main-img {
+            width: 100%;
+            border-radius: 16px;
+            object-fit: cover;
+            height: 510px;
+            object-position: center 53%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+        }
+
+        .opening-side {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .opening-side img {
+            width: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+            height: 246px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .opening-side-top {
+            object-position: center 42%;
+        }
+
+        .opening-side-bottom {
+            object-position: center 48%;
+        }
+
+        .opening-caption {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 15px;
+        }
+
+        /* ── Kiroku ── */
+        .kiroku-section {
+            background: linear-gradient(180deg, #0f1923 0%, #0a0a0a 100%);
+        }
+
+        .kiroku-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .kiroku-photo {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            min-height: 430px;
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+        }
+
+        .kiroku-main-photo {
+            width: 100%;
+            border-radius: 16px;
+            object-fit: cover;
+            height: 100%;
+            object-position: center 46%;
+        }
+
+        .kiroku-avatar {
+            position: absolute;
+            bottom: 18px;
+            right: 18px;
+            width: 112px;
+            height: 112px;
+            border-radius: 50%;
+            border: 3px solid rgba(10, 10, 10, 0.95);
+            object-fit: cover;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        .kiroku-details h3 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+        }
+
+        .kiroku-details p {
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .kiroku-tag {
+            display: inline-block;
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            color: #ff00ff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .kiroku-link {
+            display: inline-block;
+            color: #00ffff;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: color 0.3s;
+        }
+
+        .kiroku-link:hover {
+            color: #ff00ff;
+        }
+
+        /* ── Kaizen Currents ── */
+        .kaizen-section {
+            background: #0a0a0a;
+        }
+
+        .kaizen-top {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+            margin-bottom: 50px;
+        }
+
+        .kaizen-diagram {
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 255, 255, 0.15);
+        }
+
+        .currents-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .current-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 30px 24px;
+            text-align: center;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .current-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .current-card.product { border-top: 3px solid #00ffff; }
+        .current-card.customers { border-top: 3px solid #ff00ff; }
+        .current-card.operations { border-top: 3px solid #ffff00; }
+
+        .current-card .icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .current-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .current-card p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.5;
+        }
+
+        /* ── Tokyo Dome Location ── */
+        .location-section {
+            background: linear-gradient(180deg, #0a0a0a 0%, #0f1923 100%);
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .location-img {
+            width: 100%;
+            border-radius: 16px;
+            object-fit: cover;
+            max-height: 450px;
+        }
+
+        .location-detail {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        .location-detail-icon {
+            flex-shrink: 0;
+            color: #00ffff;
+            font-size: 1.3rem;
+            margin-top: 2px;
+        }
+
+        .location-detail h4 {
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .location-detail p {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.5;
+        }
+
+        /* ── Mentors ── */
+        .mentors-section {
+            background: #0f1923;
+        }
+
+        .mentors-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .mentor-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .mentor-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .mentor-photo {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 18px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .mentor-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .mentor-card h4 {
+            font-size: 1.15rem;
+            margin-bottom: 6px;
+        }
+
+        .mentor-role {
+            color: #00ffff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .mentor-bio {
+            font-size: 0.88rem;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.6;
+        }
+
+        .mentor-bio a {
+            color: #00ffff;
+            text-decoration: underline;
+        }
+
+        .network-mentors {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+        }
+
+        .network-mentors h4 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .network-names {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .network-person {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .network-person img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .network-person-info {
+            text-align: left;
+        }
+
+        .network-person-info strong {
+            font-size: 0.9rem;
+            display: block;
+        }
+
+        .network-person-info span {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* ── Community / Life ── */
+        .community-section {
+            background: linear-gradient(180deg, #0f1923 0%, #0a0a0a 100%);
+        }
+
+        .community-photos {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 10px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .community-photos img {
+            width: 100%;
+            height: 340px;
+            object-fit: cover;
+            object-position: center;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .community-dinner-casual {
+            object-position: center 64%;
+        }
+
+        .community-dinner-group {
+            object-position: center 44%;
+        }
+
+        /* ── Cohort Waitlist ── */
+        .waitlist-section {
+            padding-top: 20px;
+        }
+
+        .waitlist-card {
+            max-width: 840px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 18px;
+            padding: 34px 28px;
+        }
+
+        .waitlist-card h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .waitlist-card p {
+            color: rgba(255, 255, 255, 0.65);
+            text-align: center;
+            margin-bottom: 26px;
+            line-height: 1.6;
+        }
+
+        .waitlist-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .waitlist-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .waitlist-field-full {
+            grid-column: 1 / -1;
+        }
+
+        .waitlist-field label {
+            font-size: 0.86rem;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .waitlist-field input,
+        .waitlist-field select,
+        .waitlist-field textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-radius: 10px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .waitlist-field textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .waitlist-field input:focus,
+        .waitlist-field select:focus,
+        .waitlist-field textarea:focus {
+            outline: none;
+            border-color: #00ffff;
+        }
+
+        .waitlist-field select option {
+            color: #0a0a0a;
+        }
+
+        .waitlist-actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .waitlist-submit {
+            border: none;
+            background: linear-gradient(135deg, #00ffff, #0088aa);
+            color: #001018;
+            font-weight: 700;
+            font-size: 0.98rem;
+            padding: 13px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .waitlist-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 26px rgba(0, 255, 255, 0.28);
+        }
+
+        .waitlist-discord-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(88, 101, 242, 0.55);
+            color: #b9c2ff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 12px 20px;
+            border-radius: 10px;
+            background: rgba(88, 101, 242, 0.12);
+            transition: all 0.2s ease;
+        }
+
+        .waitlist-discord-link:hover {
+            background: rgba(88, 101, 242, 0.22);
+            border-color: rgba(88, 101, 242, 0.8);
+            color: #dbe0ff;
+        }
+
+        /* ── CTA Banner ── */
+        .cta-banner {
+            text-align: center;
+            padding: 100px 20px;
+            background: radial-gradient(ellipse at center, rgba(88, 101, 242, 0.15) 0%, transparent 70%);
+        }
+
+        .cta-banner h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .cta-banner p {
+            font-size: 1.15rem;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 550px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+
+        .cta-discord {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 50px;
+            background: #5865F2;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.15rem;
+            font-weight: 600;
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .cta-discord:hover {
+            background: #4752C4;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+        }
+
+        .cta-discord svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 60px 0 40px;
+            background: #0a0a0a;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .footer-left img {
+            height: 30px;
+            margin-bottom: 12px;
+        }
+
+        .footer-left p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1.6;
+        }
+
+        .footer-links-col h5 {
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 15px;
+        }
+
+        .footer-links-col a {
+            display: block;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+
+        .footer-links-col a:hover {
+            color: #00ffff;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            padding: 20px 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-bottom p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .footer-bottom a {
+            color: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            font-size: 0.8rem;
+            margin-left: 20px;
+        }
+
+        .footer-bottom a:hover {
+            color: #00ffff;
+        }
+
+        /* ── Sticky CTA ── */
+        .sticky-cta {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background: #5865F2;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 50px;
+            box-shadow: 0 8px 30px rgba(88, 101, 242, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .sticky-cta:hover {
+            background: #4752C4;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(88, 101, 242, 0.5);
+        }
+
+        .sticky-cta svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* ── Calendar teaser ── */
+        .calendar-img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* ── Timeline mini ── */
+        .timeline-mini {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 30px;
+        }
+
+        .timeline-mini::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #00ffff, #ff00ff);
+        }
+
+        .tl-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .tl-item::before {
+            content: '';
+            position: absolute;
+            left: -27px;
+            top: 6px;
+            width: 10px;
+            height: 10px;
+            background: #00ffff;
+            border-radius: 50%;
+            border: 2px solid #0a0a0a;
+        }
+
+        .tl-item.active::before {
+            background: #ff00ff;
+            box-shadow: 0 0 12px rgba(255, 0, 255, 0.5);
+        }
+
+        .tl-date {
+            font-size: 0.78rem;
+            color: #00ffff;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .tl-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .tl-desc {
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .btn-outline {
+            display: inline-block;
+            padding: 10px 28px;
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            color: #00ffff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-outline:hover {
+            background: rgba(0, 255, 255, 0.1);
+            border-color: #00ffff;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero-stats { gap: 30px; }
+            .hero-stat-num { font-size: 2rem; }
+            .space-text-grid,
+            .opening-grid,
+            .kiroku-grid,
+            .kaizen-top,
+            .location-grid { grid-template-columns: 1fr; }
+            .photo-grid { grid-template-columns: 1fr 1fr; }
+            .photo-grid .photo-wide { grid-column: span 2; }
+            .currents-cards { grid-template-columns: 1fr; }
+            .mentors-grid { grid-template-columns: 1fr; }
+            .community-photos { grid-template-columns: 1fr; }
+            .waitlist-form-grid { grid-template-columns: 1fr; }
+            .section-title { font-size: 2rem; }
+            .cta-banner h2 { font-size: 2.2rem; }
+            .footer-inner { flex-direction: column; }
+            .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+            .nav-menu { gap: 1rem; font-size: 0.8rem; }
+            .opening-main-img { height: 440px; }
+            .opening-side img { height: 214px; }
+            .kiroku-photo { min-height: 360px; }
+            .community-photos img { height: 310px; }
+        }
+
+        @media (max-width: 600px) {
+            .hero { height: 80vh; min-height: 500px; }
+            .hero h1 { font-size: 2rem; }
+            .hero-stats { flex-direction: column; gap: 15px; }
+            .hero-bg img { object-position: center 34%; }
+            .photo-grid { grid-template-columns: 1fr; grid-auto-rows: 220px; }
+            .photo-grid .photo-feature,
+            .photo-grid .photo-wide { grid-column: span 1; grid-row: span 1; }
+            .photo-grid img { height: 100%; }
+            .space-coworking-feature { object-position: center 50%; }
+            .space-speaker-photo { object-position: 62% 52%; }
+            .space-panel-photo { object-position: center 50%; }
+            .space-casual-photo { object-position: center 54%; }
+            .network-names { flex-direction: column; align-items: center; }
+            .waitlist-card { padding: 24px 18px; }
+            .space-visual-stack { grid-template-rows: auto auto; }
+            .opening-main-img { height: 340px; }
+            .opening-side img { height: 170px; }
+            .opening-side-top { object-position: center 40%; }
+            .opening-side-bottom { object-position: center 44%; }
+            .kiroku-photo { min-height: 300px; }
+            .kiroku-main-photo { object-position: center 42%; }
+            .kiroku-avatar {
+                width: 88px;
+                height: 88px;
+                right: 12px;
+                bottom: 12px;
+            }
+            .community-photos { grid-template-columns: 1fr; }
+            .community-photos img { height: 260px; }
+            .community-dinner-casual { object-position: center 60%; }
+            .community-dinner-group { object-position: center 40%; }
+            .sticky-cta {
+                bottom: 16px;
+                right: 16px;
+                left: 16px;
+                justify-content: center;
+                border-radius: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sticky Discord CTA -->
+    <a href="join-discord.html?src=index-sticky" target="_blank" rel="noopener noreferrer" class="sticky-cta">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        <span class="lang-en">Get Involved</span>
+        <span class="lang-jp">参加する</span>
+    </a>
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <img src="images/enxross_logo.jpg" alt="enXross" class="logo-main">
+            <ul class="nav-menu">
+                <li><a href="#space"><span class="lang-en">Space</span><span class="lang-jp">スペース</span></a></li>
+                <li><a href="#kaizen"><span class="lang-en">Kaizen Currents</span><span class="lang-jp">改善カレント</span></a></li>
+                <li><a href="#kiroku"><span class="lang-en">Kiroku</span><span class="lang-jp">記録</span></a></li>
+                <li><a href="schedule.html"><span class="lang-en">Calendar</span><span class="lang-jp">カレンダー</span></a></li>
+                <li><a href="dao.html">DAO</a></li>
+                <li><button id="lang-toggle" class="lang-btn">JP</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ── Hero ── -->
+    <section class="hero">
+        <div class="hero-bg">
+            <img src="images/grand-opening-sake-group.png" alt="enXross Grand Opening at Tokyo Dome City - team in traditional happi coats around sake barrel">
+        </div>
+        <div class="hero-content">
+            <div class="hero-tag">
+                <span class="lang-en">Cohort 1 In Progress</span>
+                <span class="lang-jp">第1期 進行中</span>
+            </div>
+            <h1>
+                <span class="lang-en">Build Your Startup Inside Tokyo Dome City</span>
+                <span class="lang-jp">東京ドームシティで<br>スタートアップを創る</span>
+            </h1>
+            <p class="hero-sub">
+                <span class="lang-en">A six-month residency for startups testing AI, XR, and Web3 products with 40 million annual visitors. The first cohort is live. The next one is coming.</span>
+                <span class="lang-jp">年間4,000万人の来場者と共にAI・XR・Web3プロダクトをテストする6ヶ月間のスタートアップ・レジデンシー。第1期が進行中。次期コホート準備中。</span>
+            </p>
+            <a href="join-discord.html?src=index-hero" target="_blank" rel="noopener noreferrer" class="hero-cta">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+                <span class="lang-en">Join the Discord</span>
+                <span class="lang-jp">Discordに参加</span>
+            </a>
+            <div class="hero-stats">
+                <div>
+                    <div class="hero-stat-num">6</div>
+                    <div class="hero-stat-label"><span class="lang-en">Month Residency</span><span class="lang-jp">ヶ月レジデンシー</span></div>
+                </div>
+                <div>
+                    <div class="hero-stat-num">40M</div>
+                    <div class="hero-stat-label"><span class="lang-en">Annual Visitors</span><span class="lang-jp">年間来場者数</span></div>
+                </div>
+                <div>
+                    <div class="hero-stat-num">10</div>
+                    <div class="hero-stat-label"><span class="lang-en">Startups</span><span class="lang-jp">スタートアップ</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── The Space ── -->
+    <section id="space" class="section space-section">
+        <div class="container">
+            <span class="section-label">
+                <span class="lang-en">The Space</span>
+                <span class="lang-jp">スペース</span>
+            </span>
+            <h2 class="section-title">
+                <span class="lang-en">Where Startups Ship Product</span>
+                <span class="lang-jp">スタートアップがプロダクトを生み出す場所</span>
+            </h2>
+            <div class="space-text-grid">
+                <div>
+                    <p class="section-desc" style="margin-bottom: 30px;">
+                        <span class="lang-en">A purpose-built innovation lab inside Tokyo Dome City's Meets Port building. Open workspace, presentation area, and a view of the Dome itself. This is where the cohort works, meets, and builds every day.</span>
+                        <span class="lang-jp">東京ドームシティのミーツポートビル内に設けられた専用イノベーションラボ。オープンワークスペース、プレゼンテーションエリア、そして東京ドームを望む景観。コホートのメンバーが毎日ここで仕事をし、集まり、構築します。</span>
+                    </p>
+                    <div class="space-feature">
+                        <div class="space-feature-icon">&#127759;</div>
+                        <div>
+                            <h4><span class="lang-en">Inside Tokyo Dome City</span><span class="lang-jp">東京ドームシティ内</span></h4>
+                            <p><span class="lang-en">Direct access to 40M annual visitors for real-world product testing</span><span class="lang-jp">年間4,000万人の来場者へのダイレクトアクセスで実社会テスト</span></p>
+                        </div>
+                    </div>
+                    <div class="space-feature">
+                        <div class="space-feature-icon">&#128187;</div>
+                        <div>
+                            <h4><span class="lang-en">Full Work Environment</span><span class="lang-jp">完全な作業環境</span></h4>
+                            <p><span class="lang-en">Monitors, fast Wi-Fi, presentation setup, and flexible seating</span><span class="lang-jp">モニター、高速Wi-Fi、プレゼン設備、フレキシブルな座席</span></p>
+                        </div>
+                    </div>
+                    <div class="space-feature">
+                        <div class="space-feature-icon">&#127749;</div>
+                        <div>
+                            <h4><span class="lang-en">Events & Community</span><span class="lang-jp">イベント&コミュニティ</span></h4>
+                            <p><span class="lang-en">Weekly meetups, panels, socials, and demo nights</span><span class="lang-jp">毎週のミートアップ、パネル、交流会、デモナイト</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-visual-stack">
+                    <img src="images/meetsport-exterior-night.jpg" alt="Meets Port building at Tokyo Dome City illuminated at night" class="space-primary-photo">
+                    <img src="images/tokyodome-calendar.jpeg" alt="Tokyo Dome events calendar showing major concerts and events" class="space-secondary-photo">
+                </div>
+            </div>
+
+            <div class="photo-grid">
+                <img src="images/space-coworking-wide.jpeg" alt="enXross coworking space - teams working at curved tables with colorful ceiling pipes" class="photo-feature space-coworking-feature">
+                <img src="images/event-speaker-tokyodome.jpeg" alt="Speaker presenting with Tokyo Dome illuminated in the background" class="space-speaker-photo">
+                <img src="images/event-panel-discussion.jpeg" alt="Panel discussion with Tokyo skyline visible through windows" class="space-panel-photo">
+                <img src="images/space-casual-working.jpeg" alt="Casual coworking session at the enXross space" class="photo-wide space-casual-photo">
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Grand Opening ── -->
+    <section class="section opening-section">
+        <div class="container">
+            <span class="section-label">
+                <span class="lang-en">January 20, 2026</span>
+                <span class="lang-jp">2026年1月20日</span>
+            </span>
+            <h2 class="section-title">
+                <span class="lang-en">Grand Opening</span>
+                <span class="lang-jp">グランドオープニング</span>
+            </h2>
+            <p class="section-desc">
+                <span class="lang-en">The first cohort launched with a traditional kagami biraki sake barrel ceremony at Tokyo Dome City. Partners, mentors, startups, and the Tokyo Dome Corporation came together to kick off six months of building.</span>
+                <span class="lang-jp">第1期は東京ドームシティでの伝統的な鏡開きセレモニーで幕を開けました。パートナー、メンター、スタートアップ、東京ドームが一堂に会し、6ヶ月の挑戦が始まりました。</span>
+            </p>
+            <div class="opening-grid">
+                <img src="images/grand-opening-sake-breaking.png" alt="Team performing kagami biraki sake barrel ceremony in traditional happi coats" class="opening-main-img">
+                <div class="opening-side">
+                    <img src="images/grand-opening-ceremony.jpeg" alt="Grand opening ceremony with sake barrel and formal gathering" class="opening-side-top">
+                    <img src="images/grand-opening-crowd.jpeg" alt="Full crowd gathered at the enXross space for grand opening" class="opening-side-bottom">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Meet Kiroku ── -->
+    <section id="kiroku" class="section kiroku-section">
+        <div class="container">
+            <span class="section-label">
+                <span class="lang-en">AI Agent</span>
+                <span class="lang-jp">AIエージェント</span>
+            </span>
+            <div class="kiroku-grid">
+                <div class="kiroku-photo">
+                    <img src="images/kiroku-mac-mini.jpeg" alt="Kiroku AI agent running on a Mac Mini with MEET KIROKU sign at the enXross space" class="kiroku-main-photo">
+                    <img src="images/kiroku.png" alt="Kiroku mascot - AI tanuki" class="kiroku-avatar">
+                </div>
+                <div class="kiroku-details">
+                    <h3>
+                        <span class="lang-en">Meet Kiroku</span>
+                        <span class="lang-jp">記録 (Kiroku) について</span>
+                    </h3>
+                    <p>
+                        <span class="lang-en">Kiroku is enXross's autonomous AI agent. Running 24/7 on a Mac Mini in the lab, Kiroku serves as the operational core of the enXross DAO - tracking progress, facilitating governance decisions, and helping the community stay aligned.</span>
+                        <span class="lang-jp">Kirokuは、enXrossの自律型AIエージェントです。ラボ内のMac Miniで24時間稼働し、enXross DAOの運営コアとして進捗管理、ガバナンス支援、コミュニティの連携を担っています。</span>
+                    </p>
+                    <p>
+                        <span class="lang-en">Named after the Japanese word for "record" (記録), Kiroku is an experiment in agent-led organization - an AI that doesn't just assist, but actively governs.</span>
+                        <span class="lang-jp">「記録」という日本語から名付けられたKirokuは、エージェント主導型組織の実験です。単なるアシスタントではなく、能動的にガバナンスを行うAIです。</span>
+                    </p>
+                    <div>
+                        <span class="kiroku-tag">Autonomous Agent</span>
+                        <span class="kiroku-tag">DAO Governor</span>
+                        <span class="kiroku-tag">Always On</span>
+                    </div>
+                    <a href="dao.html" class="kiroku-link">
+                        <span class="lang-en">Learn more about the DAO &rarr;</span>
+                        <span class="lang-jp">DAOの詳細を見る &rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Kaizen Currents ── -->
+    <section id="kaizen" class="section kaizen-section">
+        <div class="container">
+            <span class="section-label">
+                <span class="lang-en">Methodology</span>
+                <span class="lang-jp">メソドロジー</span>
+            </span>
+            <h2 class="section-title">
+                <span class="lang-en">Kaizen Currents</span>
+                <span class="lang-jp">改善カレント</span>
+            </h2>
+            <div class="kaizen-top">
+                <div>
+                    <p class="section-desc">
+                        <span class="lang-en">Inspired by the Japanese philosophy of continuous improvement, Kaizen Currents is the operating system that keeps startups growing in balance. Three dimensions - Product, Customers, and Operations - flow together so teams don't over-index on one area at the expense of others.</span>
+                        <span class="lang-jp">日本の「改善」哲学に着想を得たKaizen Currentsは、スタートアップのバランスの取れた成長を支えるオペレーティングシステムです。プロダクト、顧客、オペレーションの3つの次元が連動し、一方に偏ることなく成長を導きます。</span>
+                    </p>
+                    <p style="color: rgba(255,255,255,0.5); line-height: 1.7; font-size: 0.95rem;">
+                        <span class="lang-en">Monthly reviews help teams see where they're strong, where they're lagging, and how they compare with the rest of the cohort. Each team gets a visual dashboard tracking their progress from baseline to Demo Day.</span>
+                        <span class="lang-jp">月次レビューにより、チームは自分たちの強み、遅れている部分、他チームとの比較を把握できます。各チームはベースラインからデモデイまでの進捗を視覚的に追跡するダッシュボードを受け取ります。</span>
+                    </p>
+                    <a href="swimlanes.html" class="btn-outline">
+                        <span class="lang-en">View Progress Tracker</span>
+                        <span class="lang-jp">進捗トラッカーを見る</span>
+                    </a>
+                </div>
+                <img src="images/kaizen_currents.png" alt="Kaizen Currents framework diagram showing Product, Customers, and Operations dimensions" class="kaizen-diagram">
+            </div>
+
+            <div class="currents-cards">
+                <div class="current-card product">
+                    <div class="icon">&#128736;</div>
+                    <h4><span class="lang-en">Product</span><span class="lang-jp">プロダクト</span></h4>
+                    <p><span class="lang-en">Build, refine, and validate through real-world testing with Tokyo Dome City's visitors</span><span class="lang-jp">東京ドームシティの来場者を通じた実社会テストで構築・改善・検証</span></p>
+                </div>
+                <div class="current-card customers">
+                    <div class="icon">&#128101;</div>
+                    <h4><span class="lang-en">Customers</span><span class="lang-jp">顧客</span></h4>
+                    <p><span class="lang-en">Understand behavior, grow your user base, and gather feedback at scale</span><span class="lang-jp">行動を理解し、ユーザーベースを拡大し、大規模にフィードバックを収集</span></p>
+                </div>
+                <div class="current-card operations">
+                    <div class="icon">&#9881;</div>
+                    <h4><span class="lang-en">Operations</span><span class="lang-jp">オペレーション</span></h4>
+                    <p><span class="lang-en">Build scalable systems, align your team, and optimize for growth</span><span class="lang-jp">スケーラブルなシステムを構築し、チームを連携させ、成長を最適化</span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Program Timeline ── -->
+    <section class="section location-section">
+        <div class="container">
+            <span class="section-label">
+                <span class="lang-en">Program</span>
+                <span class="lang-jp">プログラム</span>
+            </span>
+            <h2 class="section-title">
+                <span class="lang-en">Tokyo Dome City &amp; Timeline</span>
+                <span class="lang-jp">東京ドームシティ &amp; タイムライン</span>
+            </h2>
+            <div class="location-grid">
+                <div>
+                    <p class="section-desc">
+                        <span class="lang-en">Tokyo Dome City is a complete entertainment ecosystem: stadium, amusement park, hotel, shops, restaurants, and more. Startups deploy their products inside a high-density, high-diversity, real-world environment.</span>
+                        <span class="lang-jp">東京ドームシティはスタジアム、遊園地、ホテル、ショップ、レストランなどを備えた完全なエンターテインメント・エコシステム。高密度・多様性のある実社会環境でプロダクトを展開します。</span>
+                    </p>
+                    <div class="location-detail">
+                        <div class="location-detail-icon">&#128205;</div>
+                        <div>
+                            <h4><span class="lang-en">Meets Port Building</span><span class="lang-jp">ミーツポートビル</span></h4>
+                            <p><span class="lang-en">Dedicated lab space with full amenities, overlooking the Dome</span><span class="lang-jp">東京ドームを望む専用ラボスペース</span></p>
+                        </div>
+                    </div>
+                    <div class="location-detail">
+                        <div class="location-detail-icon">&#127903;</div>
+                        <div>
+                            <h4><span class="lang-en">Live Events Year-Round</span><span class="lang-jp">年間を通じたイベント</span></h4>
+                            <p><span class="lang-en">Major concerts, sports, exhibitions happening right outside your door</span><span class="lang-jp">コンサート、スポーツ、展示会がすぐそばで開催</span></p>
+                        </div>
+                    </div>
+                    <div class="location-detail">
+                        <div class="location-detail-icon">&#128642;</div>
+                        <div>
+                            <h4><span class="lang-en">Central Tokyo</span><span class="lang-jp">都心</span></h4>
+                            <p><span class="lang-en">Suidobashi / Korakuen station - easy access from anywhere in the city</span><span class="lang-jp">水道橋/後楽園駅 - 都内どこからでもアクセス良好</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="timeline-mini">
+                        <div class="tl-item">
+                            <div class="tl-date"><span class="lang-en">Jan 5</span><span class="lang-jp">1月5日</span></div>
+                            <div class="tl-title"><span class="lang-en">Lab Opens</span><span class="lang-jp">ラボ・オープン</span></div>
+                        </div>
+                        <div class="tl-item">
+                            <div class="tl-date"><span class="lang-en">Jan 20</span><span class="lang-jp">1月20日</span></div>
+                            <div class="tl-title"><span class="lang-en">Grand Opening</span><span class="lang-jp">グランドオープニング</span></div>
+                        </div>
+                        <div class="tl-item active">
+                            <div class="tl-date"><span class="lang-en">Feb</span><span class="lang-jp">2月</span></div>
+                            <div class="tl-title"><span class="lang-en">First Kaizen Review</span><span class="lang-jp">第1回改善レビュー</span></div>
+                            <div class="tl-desc"><span class="lang-en">We are here</span><span class="lang-jp">現在地</span></div>
+                        </div>
+                        <div class="tl-item">
+                            <div class="tl-date"><span class="lang-en">Mar</span><span class="lang-jp">3月</span></div>
+                            <div class="tl-title"><span class="lang-en">Halfway Review</span><span class="lang-jp">中間レビュー</span></div>
+                        </div>
+                        <div class="tl-item">
+                            <div class="tl-date"><span class="lang-en">Apr</span><span class="lang-jp">4月</span></div>
+                            <div class="tl-title"><span class="lang-en">Customer Activation Sprint</span><span class="lang-jp">顧客アクティベーション</span></div>
+                        </div>
+                        <div class="tl-item">
+                            <div class="tl-date"><span class="lang-en">May</span><span class="lang-jp">5月</span></div>
+                            <div class="tl-title"><span class="lang-en">Product Validation Sprint</span><span class="lang-jp">プロダクト検証</span></div>
+                        </div>
+                        <div class="tl-item">
+                            <div class="tl-date"><span class="lang-en">Jun 26</span><span class="lang-jp">6月26日</span></div>
+                            <div class="tl-title"><span class="lang-en">Demo Day</span><span class="lang-jp">デモデイ</span></div>
+                        </div>
+                    </div>
+                    <a href="schedule.html" class="btn-outline">
+                        <span class="lang-en">Full Schedule &rarr;</span>
+                        <span class="lang-jp">詳細スケジュール &rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Mentors ── -->
+    <section id="mentors" class="section mentors-section">
+        <div class="container">
+            <span class="section-label">
+                <span class="lang-en">Mentors</span>
+                <span class="lang-jp">メンター</span>
+            </span>
+            <h2 class="section-title">
+                <span class="lang-en">Who's Behind This</span>
+                <span class="lang-jp">運営チーム</span>
+            </h2>
+            <p class="section-desc">
+                <span class="lang-en">International founders, operators, and researchers guiding the cohort through six months of building in Tokyo.</span>
+                <span class="lang-jp">東京での6ヶ月の挑戦をガイドする国際的な創業者、オペレーター、研究者たち。</span>
+            </p>
+
+            <div class="mentors-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 700px; margin: 0 auto 50px;">
+                <div class="mentor-card">
+                    <div class="mentor-photo">
+                        <img src="images/mike.jpeg" alt="Mike Fraietta">
+                    </div>
+                    <h4>Mike Fraietta</h4>
+                    <p class="mentor-role">
+                        <span class="lang-en">Program Director & EmpireDAO Founder</span>
+                        <span class="lang-jp">プログラムディレクター & EmpireDAO 創設者</span>
+                    </p>
+                    <p class="mentor-bio">
+                        <span class="lang-en">Built <a href="https://www.linkedin.com/in/fraietta" target="_blank" rel="noopener noreferrer">EmpireDAO</a> into NYC's Web3 hub. Former Sequoia Capital Scout. Now leading enXross and building Gargoyle Systems.</span>
+                        <span class="lang-jp"><a href="https://www.linkedin.com/in/fraietta" target="_blank" rel="noopener noreferrer">EmpireDAO</a>をNYCのWeb3ハブに。元Sequoiaスカウト。enXrossを率い、Gargoyle Systemsを構築中。</span>
+                    </p>
+                </div>
+                <div class="mentor-card">
+                    <div class="mentor-photo">
+                        <img src="images/sho.jpeg" alt="Sho Akagi">
+                    </div>
+                    <h4>Sho Akagi</h4>
+                    <p class="mentor-role">
+                        <span class="lang-en">Tokyo Ecosystem Leader</span>
+                        <span class="lang-jp">東京エコシステムリーダー</span>
+                    </p>
+                    <p class="mentor-bio">
+                        <span class="lang-en">Tokyo-based entrepreneur with deep roots in the Japanese startup ecosystem. Helps international teams navigate the local market.</span>
+                        <span class="lang-jp">日本のスタートアップエコシステムに深いルーツを持つ東京の起業家。海外チームの現地市場展開を支援。</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="network-mentors">
+                <h4><span class="lang-en">Extended Mentor Network</span><span class="lang-jp">メンターネットワーク</span></h4>
+                <div class="network-names">
+                    <div class="network-person">
+                        <img src="images/perm.jpeg" alt="Permjot Valia">
+                        <div class="network-person-info">
+                            <strong>Permjot Valia</strong>
+                            <span><span class="lang-en">CEO & Founder, MentorCamp</span><span class="lang-jp">MentorCamp CEO & 創設者</span></span>
+                        </div>
+                    </div>
+                    <div class="network-person">
+                        <img src="images/ray.jpeg" alt="Ray Rehito Hatoyama">
+                        <div class="network-person-info">
+                            <strong>Ray Rehito Hatoyama</strong>
+                            <span><span class="lang-en">Global Brand Advisor (ex-Sanrio)</span><span class="lang-jp">グローバルブランドアドバイザー (元サンリオ)</span></span>
+                        </div>
+                    </div>
+                    <div class="network-person">
+                        <img src="images/anna.jpeg" alt="Anna Matsumoto">
+                        <div class="network-person-info">
+                            <strong>Anna Matsumoto</strong>
+                            <span><span class="lang-en">HCI Technologist (Stanford)</span><span class="lang-jp">HCIテクノロジスト (スタンフォード)</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Community / Life ── -->
+    <section class="section community-section">
+        <div class="container">
+            <span class="section-label">
+                <span class="lang-en">Community</span>
+                <span class="lang-jp">コミュニティ</span>
+            </span>
+            <h2 class="section-title">
+                <span class="lang-en">Life at enXross</span>
+                <span class="lang-jp">enXrossでの生活</span>
+            </h2>
+            <p class="section-desc">
+                <span class="lang-en">It's not just work. Weekly meetups, socials, team dinners, and the energy of building alongside other founders in one of the most exciting cities in the world.</span>
+                <span class="lang-jp">仕事だけではありません。毎週のミートアップ、交流会、チームディナー、そして世界で最もエキサイティングな街で他の創業者と共に構築するエネルギー。</span>
+            </p>
+            <div class="community-photos">
+                <img src="images/team-dinner-casual.jpeg" alt="Team dinner at a Tokyo pub" class="community-dinner-casual">
+                <img src="images/team-dinner-group.JPG" alt="Group dinner with the enXross community" class="community-dinner-group">
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Cohort Waitlist ── -->
+    <section id="cohort-waitlist" class="section waitlist-section">
+        <div class="container">
+            <div class="waitlist-card">
+                <h3>
+                    <span class="lang-en">Apply for the Next Cohort</span>
+                    <span class="lang-jp">次期コホートに応募する</span>
+                </h3>
+                <p>
+                    <span class="lang-en">Submit your details to get eligibility details, timeline updates, and priority access to the next intake.</span>
+                    <span class="lang-jp">詳細を送信すると、応募条件、日程アップデート、次回募集の優先案内を受け取れます。</span>
+                </p>
+                <form name="cohort-waitlist" method="POST" action="thanks.html?type=cohort" data-netlify="true" netlify-honeypot="bot-field" data-track-form="cohort_waitlist_submit">
+                    <input type="hidden" name="form-name" value="cohort-waitlist">
+                    <p hidden>
+                        <label>Do not fill this out: <input name="bot-field"></label>
+                    </p>
+                    <input type="hidden" name="first_touch" data-attribution="first_touch">
+                    <input type="hidden" name="last_touch" data-attribution="last_touch">
+                    <input type="hidden" name="landing_page" data-attribution="landing_page">
+                    <div class="waitlist-form-grid">
+                        <div class="waitlist-field">
+                            <label for="waitlist-name"><span class="lang-en">Full Name</span><span class="lang-jp">氏名</span></label>
+                            <input id="waitlist-name" type="text" name="name" required>
+                        </div>
+                        <div class="waitlist-field">
+                            <label for="waitlist-email"><span class="lang-en">Work Email</span><span class="lang-jp">メールアドレス</span></label>
+                            <input id="waitlist-email" type="email" name="email" required>
+                        </div>
+                        <div class="waitlist-field">
+                            <label for="waitlist-company"><span class="lang-en">Startup / Company</span><span class="lang-jp">スタートアップ / 会社名</span></label>
+                            <input id="waitlist-company" type="text" name="company">
+                        </div>
+                        <div class="waitlist-field">
+                            <label for="waitlist-track"><span class="lang-en">Primary Track</span><span class="lang-jp">希望トラック</span></label>
+                            <select id="waitlist-track" name="track_interest" required>
+                                <option value="">Select one / 1つ選択</option>
+                                <option value="ai">AI</option>
+                                <option value="xr">XR</option>
+                                <option value="web3">Web3 / Blockchain</option>
+                                <option value="mixed">Multi-track</option>
+                            </select>
+                        </div>
+                        <div class="waitlist-field waitlist-field-full">
+                            <label for="waitlist-message"><span class="lang-en">What are you building?</span><span class="lang-jp">何を開発していますか？</span></label>
+                            <textarea id="waitlist-message" name="project_summary" required></textarea>
+                        </div>
+                    </div>
+                    <div class="waitlist-actions">
+                        <button type="submit" class="waitlist-submit">
+                            <span class="lang-en">Join the Waitlist</span>
+                            <span class="lang-jp">ウェイトリストに登録</span>
+                        </button>
+                        <a href="join-discord.html?src=index-waitlist" target="_blank" rel="noopener noreferrer" class="waitlist-discord-link">
+                            <span class="lang-en">Or Join Discord First</span>
+                            <span class="lang-jp">先にDiscordに参加</span>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Final CTA ── -->
+    <section class="cta-banner">
+        <div class="container">
+            <h2>
+                <span class="lang-en">Ready to Build in Tokyo?</span>
+                <span class="lang-jp">東京で創る準備は?</span>
+            </h2>
+            <p>
+                <span class="lang-en">The first cohort is underway. Join our Discord to connect with the community and be first to know about the next cohort.</span>
+                <span class="lang-jp">第1期が進行中。Discordに参加してコミュニティとつながり、次期コホートの情報をいち早く入手しましょう。</span>
+            </p>
+            <a href="join-discord.html?src=index-final-cta" target="_blank" rel="noopener noreferrer" class="cta-discord">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+                <span class="lang-en">Join the Discord</span>
+                <span class="lang-jp">Discordに参加</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-left">
+                <img src="images/enxross_logo.jpg" alt="enXross">
+                <p>
+                    <span class="lang-en">Building the future at Tokyo Dome City.<br>A program by EmpireDAO &amp; Tokyo Dome Corporation.</span>
+                    <span class="lang-jp">東京ドームシティで未来を創る。<br>EmpireDAO & 東京ドームによるプログラム。</span>
+                </p>
+            </div>
+            <div class="footer-links-col">
+                <h5><span class="lang-en">Program</span><span class="lang-jp">プログラム</span></h5>
+                <a href="schedule.html"><span class="lang-en">Calendar</span><span class="lang-jp">カレンダー</span></a>
+                <a href="swimlanes.html"><span class="lang-en">Kaizen Currents</span><span class="lang-jp">改善カレント</span></a>
+                <a href="dao.html">DAO</a>
+            </div>
+            <div class="footer-links-col">
+                <h5><span class="lang-en">Resources</span><span class="lang-jp">リソース</span></h5>
+                <a href="https://www.tokyo-dome.jp/english/upload/9cbe624d05582576cf2c12f6287a1223.pdf" target="_blank" rel="noopener noreferrer"><span class="lang-en">Press Release</span><span class="lang-jp">プレスリリース</span></a>
+                <a href="https://www.tokyo-dome.jp/english/" target="_blank" rel="noopener noreferrer"><span class="lang-en">Tokyo Dome Corp</span><span class="lang-jp">東京ドーム</span></a>
+                <a href="https://x.gd/Az8G7" target="_blank" rel="noopener noreferrer">&#127471;&#127477; <span class="lang-en">Japanese Companies</span><span class="lang-jp">日本企業応募</span></a>
+            </div>
+            <div class="footer-links-col">
+                <h5><span class="lang-en">Sponsors</span><span class="lang-jp">スポンサー</span></h5>
+                <a href="sponsors.html?track=blockchain">&#9939; Blockchain</a>
+                <a href="sponsors.html?track=ai">&#129302; AI</a>
+                <a href="sponsors.html?track=xr">&#127918; XR</a>
+            </div>
+            <div class="footer-links-col">
+                <h5><span class="lang-en">Connect</span><span class="lang-jp">つながる</span></h5>
+                <a href="join-discord.html?src=index-footer-connect" target="_blank" rel="noopener noreferrer">Discord</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 enXross DAO</p>
+            <div>
+                <a href="join-discord.html?src=index-footer-bottom" target="_blank" rel="noopener noreferrer">Discord</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Language Toggle
+        const langToggle = document.getElementById('lang-toggle');
+        const body = document.body;
+
+        const storedLang = localStorage.getItem('site-language');
+        if (storedLang === 'jp') {
+            body.classList.add('jp-mode');
+            langToggle.textContent = 'EN';
+        }
+
+        langToggle.addEventListener('click', () => {
+            body.classList.toggle('jp-mode');
+            if (body.classList.contains('jp-mode')) {
+                langToggle.textContent = 'EN';
+                localStorage.setItem('site-language', 'jp');
+            } else {
+                langToggle.textContent = 'JP';
+                localStorage.setItem('site-language', 'en');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
