@@ -3,9 +3,10 @@
 ## Preconditions
 
 - Bot is online (`python bot.py`)
-- You are in `ALLOWED_USER_IDS`
 - You are posting inside one of `ADMIN_CHANNEL_IDS`
 - `OPENAI_API_KEY` is set for patch generation
+- If `ALLOWED_USER_IDS` is set, you are included in it.
+- If `ALLOWED_USER_IDS` is empty, bootstrap mode allows anyone in admin channels.
 
 ## Happy path
 
@@ -61,9 +62,20 @@
 
 - `Unauthorized`:
   - Your Discord user ID is not in `ALLOWED_USER_IDS`.
+  - Or you are posting outside `ADMIN_CHANNEL_IDS`.
 - `OPENAI_API_KEY is not set`:
   - Add key to `.env` and restart bot.
 - `Patch apply failed`:
   - Regenerate with clearer scope; task may be too broad.
 - `git push` failed:
   - Fix git auth for bot runtime user (SSH recommended).
+
+## ID helpers
+
+Use:
+
+```text
+!kiroku id
+```
+
+to get your `user_id`, current `channel_id`, and `guild_id`.

@@ -122,7 +122,7 @@ ops = CodeOps(
 )
 
 
-READ_COMMANDS = {"help", "status", "tasks", "show", "preview", "repo"}
+READ_COMMANDS = {"help", "status", "tasks", "show", "preview", "repo", "id"}
 MUTATING_COMMANDS = {"task", "plan", "diff", "apply", "commit", "pr", "run"}
 
 
@@ -134,7 +134,9 @@ def _is_admin_channel(channel_id: int) -> bool:
 
 def _is_allowed_user(user_id: int) -> bool:
     if not CONFIG.allowed_user_ids:
-        return False
+        # Bootstrap mode: if explicit allow-list is not configured yet,
+        # allow mutating commands only in admin channels.
+        return True
     return user_id in CONFIG.allowed_user_ids
 
 
@@ -176,6 +178,7 @@ async def _handle_help(message: discord.Message) -> None:
         f"Kiroku commands ({CONFIG.command_prefix} ...):\n"
         "- help\n"
         "- status\n"
+        "- id (show your user/channel/guild IDs)\n"
         "- repo\n"
         "- tasks [all]\n"
         "- show <id>\n"
@@ -203,7 +206,7 @@ async def _handle_status(message: discord.Message) -> None:
         "Kiroku status\n"
         f"command_prefix={CONFIG.command_prefix}\n"
         f"admin_channels={','.join(str(x) for x in sorted(CONFIG.admin_channel_ids)) or 'ALL'}\n"
-        f"allowed_users={','.join(str(x) for x in sorted(CONFIG.allowed_user_ids)) or 'NONE'}\n"
+        f"allowed_users={','.join(str(x) for x in sorted(CONFIG.allowed_user_ids)) or 'ALL_IN_ADMIN_CHANNEL'}\n"
         f"model={'configured' if CONFIG.openai_api_key else 'missing OPENAI_API_KEY'}\n"
         f"tasks_open={total}\n"
         f"task_statuses={status_line or 'none'}"
@@ -351,6 +354,14 @@ async def _dispatch_command(message: discord.Message, command: str, args: str) -
             await _handle_preview(message, args)
         elif cmd == "repo":
             await _send_chunks(message.channel, _repo_overview())
+        elif cmd == "id":
+            guild_id = message.guild.id if message.guild else "n/a"
+            text = (
+                f"user_id={message.author.id}\n"
+                f"channel_id={message.channel.id}\n"
+                f"guild_id={guild_id}"
+            )
+            await _send_chunks(message.channel, text)
         return
 
     if cmd in MUTATING_COMMANDS:
@@ -381,7 +392,10 @@ async def _dispatch_command(message: discord.Message, command: str, args: str) -
 async def on_ready() -> None:
     logger.info("%s connected", bot.user)
     logger.info("admin channels: %s", sorted(CONFIG.admin_channel_ids) if CONFIG.admin_channel_ids else "ALL")
-    logger.info("allowed users: %s", sorted(CONFIG.allowed_user_ids) if CONFIG.allowed_user_ids else "NONE")
+    logger.info(
+        "allowed users: %s",
+        sorted(CONFIG.allowed_user_ids) if CONFIG.allowed_user_ids else "ALL_IN_ADMIN_CHANNEL",
+    )
     logger.info("repo path: %s", CONFIG.repo_path)
     logger.info("tasks file: %s", CONFIG.tasks_file)
 

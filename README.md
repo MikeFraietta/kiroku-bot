@@ -27,6 +27,7 @@ One-shot option:
 
 - Commands are only accepted in `ADMIN_CHANNEL_IDS`.
 - Mutating commands require caller to be in `ALLOWED_USER_IDS`.
+- If `ALLOWED_USER_IDS` is empty, mutating commands are allowed for anyone in admin channels (bootstrap mode).
 - Git work is isolated per task branch (`codex/task-<id>`).
 - Task state is persisted in `.kiroku/tasks.json`.
 
@@ -51,7 +52,7 @@ Edit `.env`:
 
 - `DISCORD_TOKEN`
 - `ADMIN_CHANNEL_IDS`
-- `ALLOWED_USER_IDS`
+- `ALLOWED_USER_IDS` (optional in bootstrap mode)
 - `REPO_PATH`
 - `BASE_BRANCH`
 - `GIT_REMOTE`
@@ -70,6 +71,7 @@ Read commands:
 
 - `!kiroku help`
 - `!kiroku status`
+- `!kiroku id`
 - `!kiroku repo`
 - `!kiroku tasks [all]`
 - `!kiroku show <id>`
@@ -88,5 +90,6 @@ Mutating commands (allowed users only):
 ## Notes
 
 - `diff` and `run` require `OPENAI_API_KEY`.
+- Use `!kiroku id` to copy your `user_id`, `channel_id`, and `guild_id` directly from Discord.
 - `apply` can optionally run `VERIFY_COMMAND` from `.env`.
 - Compare URLs are generated from your git remote URL.
