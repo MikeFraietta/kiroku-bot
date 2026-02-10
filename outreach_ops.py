@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-import os
 import re
 import smtplib
 import ssl
@@ -309,6 +308,29 @@ class OutreachOps:
             return BingWebSearchClient(self.config.bing_api_key)
         raise OutreachOpsError("SEARCH_PROVIDER must be set to `serpapi` or `bing`.")
 
+    def _validate_draft_config(self) -> None:
+        missing: list[str] = []
+        if not self.config.sender_name:
+            missing.append("OUTREACH_SENDER_NAME")
+        if not self.config.sender_title:
+            missing.append("OUTREACH_SENDER_TITLE")
+        if not self.config.sender_email:
+            missing.append("OUTREACH_SENDER_EMAIL")
+        if not self.config.calendar_link:
+            missing.append("OUTREACH_CALENDAR_LINK")
+        if not self.config.sponsorship_page_url:
+            missing.append("OUTREACH_SPONSORSHIP_PAGE_URL")
+        if not self.config.cohort_date_window:
+            missing.append("OUTREACH_COHORT_DATE_WINDOW")
+        if not self.config.cohort_city:
+            missing.append("OUTREACH_COHORT_CITY")
+
+        if missing:
+            raise OutreachOpsError(
+                "Missing outreach draft config: " + ", ".join(missing) + ". "
+                "Fill these in `.env` and restart the bot."
+            )
+
     async def _fetch_text(self, session: aiohttp.ClientSession, url: str) -> str:
         if not url:
             return ""
@@ -457,6 +479,7 @@ class OutreachOps:
                 writer.writerow(row)
 
     def draft_housing_emails(self, leads_csv: Path) -> Path:
+        self._validate_draft_config()
         leads = self._read_csv(leads_csv)
         subject_t, body_t = self._load_housing_template()
 
@@ -504,9 +527,13 @@ class OutreachOps:
             raise OutreachOpsError("Sending is disabled (set OUTREACH_SEND_ENABLED=true).")
         if not (self.config.smtp_host and self.config.smtp_port and self.config.smtp_user and self.config.smtp_password):
             raise OutreachOpsError("SMTP is not configured (SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASSWORD).")
+        if not self.config.sender_email:
+            raise OutreachOpsError("Missing OUTREACH_SENDER_EMAIL.")
 
         msg = EmailMessage()
-        msg["From"] = self.config.sender_email
+        from_email = self.config.sender_email or self.config.smtp_user
+        from_name = (self.config.sender_name or "").strip()
+        msg["From"] = f"{from_name} <{from_email}>" if from_name else from_email
         msg["To"] = to_email
         msg["Subject"] = subject
         msg["Reply-To"] = self.config.sender_email
@@ -551,4 +578,3 @@ class OutreachOps:
 
         self._write_csv(outbox_csv, updated)
         return attempted, sent, outbox_csv
-
