@@ -556,7 +556,7 @@ class CodeOps:
 
 def parse_task_id(value: str) -> int:
     cleaned = str(value or "").strip()
-    m = re.match(r"^#?(\\d+)$", cleaned)
+    m = re.match(r"^#?([0-9]+)$", cleaned)
     if not m:
         raise CodeOpsError("Task ID must be a number (example: `1` or `#1`).")
     return int(m.group(1))
