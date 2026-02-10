@@ -133,6 +133,18 @@ class CodeOps:
             )
         return proc.stdout.strip()
 
+    def _branch_exists(self, branch: str) -> bool:
+        if not branch.strip():
+            return False
+        proc = subprocess.run(
+            ["git", "show-ref", "--verify", "--quiet", f"refs/heads/{branch}"],
+            cwd=self.config.repo_path,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        return proc.returncode == 0
+
     def _run_shell(self, cmd: str, check: bool = True) -> str:
         proc = subprocess.run(
             cmd,
@@ -427,6 +439,12 @@ class CodeOps:
     async def commit_task(self, task_id: int, message: str | None = None) -> CodeTask:
         async with self._state_lock:
             task = self._get_task_unlocked(task_id)
+            if not self._branch_exists(task.branch):
+                raise CodeOpsError(
+                    f"Task branch does not exist yet: {task.branch}. "
+                    "Run `apply` first to create the branch and apply the patch "
+                    "(or run `run` for the full pipeline)."
+                )
             self._run(["git", "checkout", task.branch], check=True)
             self._run(["git", "add", "-A"], check=True)
 
@@ -448,6 +466,12 @@ class CodeOps:
     async def publish_task(self, task_id: int) -> CodeTask:
         async with self._state_lock:
             task = self._get_task_unlocked(task_id)
+            if not self._branch_exists(task.branch):
+                raise CodeOpsError(
+                    f"Task branch does not exist yet: {task.branch}. "
+                    "Run `apply` first to create the branch and apply the patch "
+                    "(or run `run` for the full pipeline)."
+                )
             self._run(["git", "checkout", task.branch], check=True)
             self._run(["git", "push", "-u", self.config.remote_name, task.branch], check=True)
 
