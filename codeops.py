@@ -556,7 +556,9 @@ class CodeOps:
 
 def parse_task_id(value: str) -> int:
     cleaned = str(value or "").strip()
-    m = re.match(r"^#?([0-9]+)$", cleaned)
+    # Accept common Discord-friendly formats like "1", "#1", or "#1)".
+    # Disallow sticking additional word characters right after the ID (e.g. "1abc").
+    m = re.match(r"^#?([0-9]+)(?=$|[^0-9A-Za-z_])", cleaned)
     if not m:
         raise CodeOpsError("Task ID must be a number (example: `1` or `#1`).")
     return int(m.group(1))
