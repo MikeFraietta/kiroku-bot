@@ -226,6 +226,7 @@ class OutreachLead:
 
 @dataclass
 class OutreachEmailDraft:
+    draft_id: str
     company: str
     domain: str
     to_email: str
@@ -237,6 +238,7 @@ class OutreachEmailDraft:
 
     def to_row(self) -> dict[str, str]:
         return {
+            "draft_id": self.draft_id,
             "company": self.company,
             "domain": self.domain,
             "to_email": self.to_email,
@@ -484,7 +486,7 @@ class OutreachOps:
         subject_t, body_t = self._load_housing_template()
 
         drafts: list[OutreachEmailDraft] = []
-        for lead in leads:
+        for idx, lead in enumerate(leads, start=1):
             to_email = lead.get("contact_email") or ""
             if not to_email:
                 continue
@@ -505,6 +507,7 @@ class OutreachOps:
             body = self._substitute(body_t, values).strip()
             drafts.append(
                 OutreachEmailDraft(
+                    draft_id=str(idx),
                     company=lead.get("company") or "",
                     domain=lead.get("domain") or "",
                     to_email=to_email,
@@ -521,6 +524,59 @@ class OutreachOps:
         out_path = self.config.state_dir / f"outbox-housing-{ts}.csv"
         self._write_csv(out_path, [d.to_row() for d in drafts])
         return out_path
+
+    def list_outbox(self, outbox_csv: Path, *, limit: int = 20, unsent_only: bool = True) -> str:
+        rows = self._read_csv(outbox_csv)
+        lines: list[str] = []
+        for row in rows:
+            if unsent_only and (row.get("sent_at") or "").strip():
+                continue
+            draft_id = (row.get("draft_id") or "").strip() or "?"
+            company = (row.get("company") or "").strip() or "Unknown"
+            to_email = (row.get("to_email") or "").strip()
+            approved = ((row.get("approved") or "").strip() or "no").lower()
+            sent_at = (row.get("sent_at") or "").strip() or "-"
+            lines.append(f"{draft_id}. {company} <{to_email}> approved={approved} sent_at={sent_at}")
+            if len(lines) >= limit:
+                break
+        if not lines:
+            return "No matching outbox rows."
+        suffix = "\n(truncated)" if len(lines) >= limit else ""
+        return "Outbox preview:\n" + "\n".join(lines) + suffix
+
+    def approve_outbox(self, outbox_csv: Path, *, approve_all: bool = False, first: int = 0, ids: set[str] | None = None) -> int:
+        if not approve_all and first <= 0 and not ids:
+            raise OutreachOpsError("approve requires one of: --all | --first N | --ids 1,2,3")
+
+        rows = self._read_csv(outbox_csv)
+        approved_count = 0
+        remaining_first = first
+
+        for row in rows:
+            already_sent = bool((row.get("sent_at") or "").strip())
+            if already_sent:
+                continue
+
+            current = ((row.get("approved") or "").strip() or "no").lower()
+            if current == "yes":
+                continue
+
+            draft_id = (row.get("draft_id") or "").strip()
+            should = False
+            if approve_all:
+                should = True
+            elif ids and draft_id and draft_id in ids:
+                should = True
+            elif remaining_first > 0:
+                should = True
+                remaining_first -= 1
+
+            if should:
+                row["approved"] = "yes"
+                approved_count += 1
+
+        self._write_csv(outbox_csv, rows)
+        return approved_count
 
     def _smtp_send(self, to_email: str, subject: str, body: str) -> None:
         if not self.config.send_enabled:

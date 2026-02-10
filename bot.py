@@ -449,6 +449,8 @@ async def _handle_outreach(message: discord.Message, args: str) -> None:
             f"- {CONFIG.command_prefix} outreach config\n"
             f"- {CONFIG.command_prefix} outreach generate housing <count>\n"
             f"- {CONFIG.command_prefix} outreach draft <leads_csv_path>\n"
+            f"- {CONFIG.command_prefix} outreach list <outbox_csv_path> [--limit N] [--unsent-only|--all]\n"
+            f"- {CONFIG.command_prefix} outreach approve <outbox_csv_path> (--all | --first N | --ids 1,2,3)\n"
             f"- {CONFIG.command_prefix} outreach send <outbox_csv_path> [--limit N] [--dry-run|--send] [--approved-only|--all] [--confirm SEND]\n"
             "\n"
             "Notes:\n"
@@ -489,6 +491,73 @@ async def _handle_outreach(message: discord.Message, args: str) -> None:
         leads_path = _resolve_outreach_path(rest)
         outbox_path = outreach.draft_housing_emails(leads_path)
         await _send_chunks(message.channel, f"Drafted emails written: {outbox_path.name} (approve rows by setting approved=yes)")
+        await message.channel.send(file=discord.File(str(outbox_path)))
+        return
+
+    if sub == "list":
+        parts = rest.split()
+        if not parts:
+            raise OutreachOpsError("Usage: outreach list <outbox_csv_path> [--limit N] [--unsent-only|--all]")
+
+        outbox_path = _resolve_outreach_path(parts[0])
+        limit = 20
+        unsent_only = True
+
+        i = 1
+        while i < len(parts):
+            token = parts[i]
+            if token == "--limit":
+                if i + 1 >= len(parts) or not parts[i + 1].isdigit():
+                    raise OutreachOpsError("--limit requires a number.")
+                limit = int(parts[i + 1])
+                i += 2
+                continue
+            if token == "--unsent-only":
+                unsent_only = True
+                i += 1
+                continue
+            if token == "--all":
+                unsent_only = False
+                i += 1
+                continue
+            raise OutreachOpsError(f"Unknown flag: {token}")
+
+        preview = outreach.list_outbox(outbox_path, limit=limit, unsent_only=unsent_only)
+        await _send_chunks(message.channel, preview)
+        return
+
+    if sub == "approve":
+        parts = rest.split()
+        if not parts:
+            raise OutreachOpsError("Usage: outreach approve <outbox_csv_path> (--all | --first N | --ids 1,2,3)")
+
+        outbox_path = _resolve_outreach_path(parts[0])
+        approve_all = False
+        first = 0
+        ids: set[str] = set()
+
+        i = 1
+        while i < len(parts):
+            token = parts[i]
+            if token == "--all":
+                approve_all = True
+                i += 1
+                continue
+            if token == "--first":
+                if i + 1 >= len(parts) or not parts[i + 1].isdigit():
+                    raise OutreachOpsError("--first requires a number.")
+                first = int(parts[i + 1])
+                i += 2
+                continue
+            if token == "--ids":
+                raw_ids = parts[i + 1] if i + 1 < len(parts) else ""
+                ids = {x.strip() for x in raw_ids.split(",") if x.strip()}
+                i += 2
+                continue
+            raise OutreachOpsError(f"Unknown flag: {token}")
+
+        approved = outreach.approve_outbox(outbox_path, approve_all=approve_all, first=first, ids=ids or None)
+        await _send_chunks(message.channel, f"Approved {approved} outbox rows: {outbox_path.name}")
         await message.channel.send(file=discord.File(str(outbox_path)))
         return
 
@@ -585,9 +654,10 @@ async def _handle_do(message: discord.Message, args: str) -> None:
             f"- Draft outbox: {outbox_path.name}\n"
             "\n"
             "Next steps:\n"
-            "1) Review + set approved=yes for the rows you want to email.\n"
-            f"2) Dry-run: {CONFIG.command_prefix} outreach send {outbox_path.name} --limit 5 --dry-run\n"
-            f"3) Send: {CONFIG.command_prefix} outreach send {outbox_path.name} --limit 5 --send --confirm SEND"
+            f"1) Preview: {CONFIG.command_prefix} outreach list {outbox_path.name} --limit 10\n"
+            f"2) Approve (example): {CONFIG.command_prefix} outreach approve {outbox_path.name} --first 5\n"
+            f"3) Dry-run: {CONFIG.command_prefix} outreach send {outbox_path.name} --limit 5 --dry-run\n"
+            f"4) Send: {CONFIG.command_prefix} outreach send {outbox_path.name} --limit 5 --send --confirm SEND"
         ),
     )
     await message.channel.send(file=discord.File(str(leads_path)))
