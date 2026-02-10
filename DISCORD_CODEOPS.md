@@ -87,6 +87,8 @@ to get your `user_id`, current `channel_id`, and `guild_id`.
 !kiroku outreach config
 !kiroku outreach generate housing 100
 !kiroku outreach draft leads-housing-Tokyo-YYYYMMDD-HHMMSS.csv
+!kiroku outreach list outbox-housing-YYYYMMDD-HHMMSS.csv --limit 10
+!kiroku outreach approve outbox-housing-YYYYMMDD-HHMMSS.csv --first 5
 !kiroku outreach send outbox-housing-YYYYMMDD-HHMMSS.csv --limit 5 --dry-run
 !kiroku outreach send outbox-housing-YYYYMMDD-HHMMSS.csv --limit 5 --send --confirm SEND
 ```
