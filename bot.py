@@ -751,6 +751,7 @@ async def _handle_outreach(message: discord.Message, args: str) -> None:
                 f"attempted={attempted} sent={sent}"
             ),
         )
+        await message.channel.send(file=discord.File(str(outbox_path)))
         return
 
     raise OutreachOpsError(f"Unknown outreach subcommand `{sub}`. Use `{CONFIG.command_prefix} outreach help`.")
