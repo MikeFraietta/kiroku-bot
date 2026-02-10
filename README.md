@@ -56,7 +56,7 @@ Edit `.env`:
 - `REPO_PATH`
 - `BASE_BRANCH`
 - `GIT_REMOTE`
-- `OPENAI_API_KEY` (required for `diff` and `run`)
+- `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` (required for `diff` and `run`)
 
 ## Run
 
@@ -89,7 +89,7 @@ Mutating commands (allowed users only):
 
 ## Notes
 
-- `diff` and `run` require `OPENAI_API_KEY`.
+- `diff` and `run` require an LLM key: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` (Anthropic is preferred if both are set).
 - Use `!kiroku id` to copy your `user_id`, `channel_id`, and `guild_id` directly from Discord.
 - `apply` can optionally run `VERIFY_COMMAND` from `.env`.
 - Compare URLs are generated from your git remote URL.

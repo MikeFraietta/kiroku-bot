@@ -91,6 +91,10 @@ class CodeOpsConfig:
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"
     openai_base_url: str = "https://api.openai.com/v1"
+    anthropic_api_key: str | None = None
+    anthropic_model: str = "claude-3-5-sonnet-latest"
+    anthropic_base_url: str = "https://api.anthropic.com"
+    anthropic_version: str = "2023-06-01"
     verify_command: str | None = None
     max_context_files: int = 6
     max_context_chars_per_file: int = 8000
@@ -291,7 +295,7 @@ class CodeOps:
             files = self._infer_files_for_task(task)
             task.files = files
 
-            if self.config.openai_api_key:
+            if self._llm_available():
                 task.plan = await self._llm_plan(task)
             else:
                 task.plan = self._fallback_plan(task, files)
@@ -310,9 +314,9 @@ class CodeOps:
                 task.plan = self._fallback_plan(task, files)
                 task.files = files
 
-            if not self.config.openai_api_key:
+            if not self._llm_available():
                 raise CodeOpsError(
-                    "OPENAI_API_KEY is not set. Add it to .env to enable automatic patch generation."
+                    "No LLM provider configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in .env to enable patch generation."
                 )
 
             patch = await self._llm_patch(task)
@@ -325,6 +329,9 @@ class CodeOps:
             task.last_error = ""
             self._upsert_task(task)
             return task
+
+    def _llm_available(self) -> bool:
+        return bool(self.config.anthropic_api_key or self.config.openai_api_key)
 
     async def apply_task(self, task_id: int) -> CodeTask:
         async with self._state_lock:
@@ -483,9 +490,14 @@ class CodeOps:
         return await self._chat_completion(system, user)
 
     async def _chat_completion(self, system: str, user: str) -> str:
-        if not self.config.openai_api_key:
-            raise CodeOpsError("OPENAI_API_KEY not configured.")
+        # Prefer Anthropic when available (OpenAI key may be out of quota).
+        if self.config.anthropic_api_key:
+            return await self._anthropic_messages(system, user)
+        if self.config.openai_api_key:
+            return await self._openai_chat_completion(system, user)
+        raise CodeOpsError("No LLM provider configured (set ANTHROPIC_API_KEY or OPENAI_API_KEY).")
 
+    async def _openai_chat_completion(self, system: str, user: str) -> str:
         url = f"{self.config.openai_base_url.rstrip('/')}/chat/completions"
         payload = {
             "model": self.config.openai_model,
@@ -509,6 +521,35 @@ class CodeOps:
                 try:
                     data = json.loads(text)
                     return data["choices"][0]["message"]["content"].strip()
+                except Exception as exc:
+                    raise CodeOpsError(f"Invalid model response: {text[:500]}") from exc
+
+    async def _anthropic_messages(self, system: str, user: str) -> str:
+        url = f"{self.config.anthropic_base_url.rstrip('/')}/v1/messages"
+        payload = {
+            "model": self.config.anthropic_model,
+            "max_tokens": 4000,
+            "temperature": 0.2,
+            "system": system,
+            "messages": [{"role": "user", "content": user}],
+        }
+        headers = {
+            "x-api-key": str(self.config.anthropic_api_key),
+            "anthropic-version": self.config.anthropic_version,
+            "content-type": "application/json",
+        }
+
+        timeout = aiohttp.ClientTimeout(total=180)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.post(url, headers=headers, json=payload) as response:
+                text = await response.text()
+                if response.status >= 300:
+                    raise CodeOpsError(f"Model request failed ({response.status}): {text[:800]}")
+                try:
+                    data = json.loads(text)
+                    parts = data.get("content", [])
+                    out = "".join(str(p.get("text", "")) for p in parts if p.get("type") == "text")
+                    return out.strip()
                 except Exception as exc:
                     raise CodeOpsError(f"Invalid model response: {text[:500]}") from exc
 

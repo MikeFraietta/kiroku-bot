@@ -37,6 +37,10 @@ class BotConfig:
     openai_api_key: str | None
     openai_model: str
     openai_base_url: str
+    anthropic_api_key: str | None
+    anthropic_model: str
+    anthropic_base_url: str
+    anthropic_version: str
 
 
 def _env_bool(name: str, default: bool) -> bool:
@@ -97,6 +101,11 @@ def load_config() -> BotConfig:
         openai_api_key=(os.getenv("OPENAI_API_KEY", "").strip() or None),
         openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip() or "gpt-4.1-mini",
         openai_base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").strip() or "https://api.openai.com/v1",
+        anthropic_api_key=(os.getenv("ANTHROPIC_API_KEY", "").strip() or None),
+        anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-latest").strip() or "claude-3-5-sonnet-latest",
+        anthropic_base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com").strip()
+        or "https://api.anthropic.com",
+        anthropic_version=os.getenv("ANTHROPIC_VERSION", "2023-06-01").strip() or "2023-06-01",
     )
 
 
@@ -117,6 +126,10 @@ ops = CodeOps(
         openai_api_key=CONFIG.openai_api_key,
         openai_model=CONFIG.openai_model,
         openai_base_url=CONFIG.openai_base_url,
+        anthropic_api_key=CONFIG.anthropic_api_key,
+        anthropic_model=CONFIG.anthropic_model,
+        anthropic_base_url=CONFIG.anthropic_base_url,
+        anthropic_version=CONFIG.anthropic_version,
         verify_command=CONFIG.verify_command,
     )
 )
@@ -202,12 +215,17 @@ async def _handle_status(message: discord.Message) -> None:
         by_status[task.status] = by_status.get(task.status, 0) + 1
 
     status_line = " ".join(f"{k}={v}" for k, v in sorted(by_status.items()))
+    model_status = (
+        f"anthropic:{CONFIG.anthropic_model}"
+        if CONFIG.anthropic_api_key
+        else (f"openai:{CONFIG.openai_model}" if CONFIG.openai_api_key else "missing LLM key")
+    )
     text = (
         "Kiroku status\n"
         f"command_prefix={CONFIG.command_prefix}\n"
         f"admin_channels={','.join(str(x) for x in sorted(CONFIG.admin_channel_ids)) or 'ALL'}\n"
         f"allowed_users={','.join(str(x) for x in sorted(CONFIG.allowed_user_ids)) or 'ALL_IN_ADMIN_CHANNEL'}\n"
-        f"model={'configured' if CONFIG.openai_api_key else 'missing OPENAI_API_KEY'}\n"
+        f"model={model_status}\n"
         f"tasks_open={total}\n"
         f"task_statuses={status_line or 'none'}"
     )

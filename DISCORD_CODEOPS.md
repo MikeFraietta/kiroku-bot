@@ -4,7 +4,7 @@
 
 - Bot is online (`python bot.py`)
 - You are posting inside one of `ADMIN_CHANNEL_IDS`
-- `OPENAI_API_KEY` is set for patch generation
+- `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` is set for patch generation (Anthropic is preferred if both are set)
 - If `ALLOWED_USER_IDS` is set, you are included in it.
 - If `ALLOWED_USER_IDS` is empty, bootstrap mode allows anyone in admin channels.
 
@@ -64,7 +64,7 @@
   - Your Discord user ID is not in `ALLOWED_USER_IDS`.
   - Or you are posting outside `ADMIN_CHANNEL_IDS`.
 - `OPENAI_API_KEY is not set`:
-  - Add key to `.env` and restart bot.
+  - Add `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` to `.env` and restart bot.
 - `Patch apply failed`:
   - Regenerate with clearer scope; task may be too broad.
 - `git push` failed:
