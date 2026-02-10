@@ -1,93 +1,92 @@
-# Kiroku Discord Bot
+# Kiroku Bot
 
-🤖 An autonomous Discord bot for enXross DAO that posts weekly event updates and meeting reminders.
+Kiroku is a Discord-first operations bot that can:
 
-## Features
+- receive admin tasks from Discord
+- generate a coding plan
+- generate a git patch (LLM-backed)
+- apply patch in a task branch
+- commit and push branch
+- return a PR compare URL
 
-- **Weekly Event Posts**: Automatically posts event information every Monday at 9 AM UTC
-- - **Event Tracking**: Keeps the community informed about upcoming events
-  - - **Reliable Scheduling**: Uses APScheduler for precise, recurring notifications
-    - - **Easy Configuration**: Simple environment variable setup
-     
-      - ## Requirements
-     
-      - - Python 3.8+
-        - - Discord.py 2.3.2
-          - - APScheduler 3.10.4
-           
-            - ## Installation
-           
-            - 1. Clone this repository:
-              2. ```bash
-                 git clone https://github.com/MikeFraietta/kiroku-bot.git
-                 cd kiroku-bot
-                 ```
+It is designed for controlled operation by a small admin group (you + Mariam).
 
-                 2. Install dependencies:
-                 3. ```bash
-                    pip install -r requirements.txt
-                    ```
+## Core flow
 
-                    3. Set up environment variables:
-                    4. ```bash
-                       cp .env.example .env
-                       ```
+1. `!kiroku task <title> || <instructions>`
+2. `!kiroku plan <id>`
+3. `!kiroku diff <id>`
+4. `!kiroku apply <id>`
+5. `!kiroku commit <id> [message]`
+6. `!kiroku pr <id>`
 
-                       4. Edit `.env` and add your values:
-                       5.    - `DISCORD_TOKEN`: Your Discord bot token from the Developer Portal
-                             -    - `CHANNEL_ID`: The ID of the channel where events will be posted
-                              
-                                  - ## Getting Your Discord Token
-                              
-                                  - 1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
-                                    2. 2. Click "New Application" and name it "Kiroku"
-                                       3. 3. Go to the "Bot" section and click "Add Bot"
-                                          4. 4. Copy the token and paste it in your `.env` file
-                                             5. 5. Under "TOKEN", click "Copy"
-                                               
-                                                6. ## Getting Your Channel ID
-                                               
-                                                7. 1. In Discord, enable Developer Mode (User Settings > Advanced > Developer Mode)
-                                                   2. 2. Right-click the channel where you want events posted
-                                                      3. 3. Click "Copy Channel ID"
-                                                         4. 4. Paste it in your `.env` file as `CHANNEL_ID`
-                                                           
-                                                            5. ## Running the Bot
-                                                           
-                                                            6. ```bash
-                                                               python bot.py
-                                                               ```
+One-shot option:
+- `!kiroku run <id>` (plan + diff + apply + commit + pr)
 
-                                                               The bot will connect to Discord and start posting events weekly at 9 AM UTC every Monday.
+## Safety model
 
-                                                               ## Customization
+- Commands are only accepted in `ADMIN_CHANNEL_IDS`.
+- Mutating commands require caller to be in `ALLOWED_USER_IDS`.
+- Git work is isolated per task branch (`codex/task-<id>`).
+- Task state is persisted in `.kiroku/tasks.json`.
 
-                                                               To change the posting schedule, edit the `bot.py` file and modify the CronTrigger:
+## Requirements
 
-                                                               ```python
-                                                               CronTrigger(day_of_week=0, hour=9, minute=0)
-                                                               ```
+- Python 3.9+
+- Git with push access to the target repo
+- Discord bot token and invited bot
+- Optional: OpenAI-compatible API key for patch generation
 
-                                                               - `day_of_week`: 0 = Monday, 1 = Tuesday, etc.
-                                                               - - `hour`: Hour in UTC (24-hour format)
-                                                                 - - `minute`: Minute (0-59)
-                                                                  
-                                                                   - ## Deployment
-                                                                  
-                                                                   - For production use, consider deploying to:
-                                                                   - - **Heroku** (with Procfile)
-                                                                     - - **Railway**
-                                                                       - - **Replit**
-                                                                         - - **Your own server**
-                                                                          
-                                                                           - ## Contributing
-                                                                          
-                                                                           - Contributions are welcome! Please feel free to submit a Pull Request.
-                                                                          
-                                                                           - ## License
-                                                                          
-                                                                           - This project is open source and available under the MIT License.
-                                                                          
-                                                                           - ## Support
-                                                                          
-                                                                           - For issues or questions, please open an issue on GitHub.
+## Setup
+
+```bash
+cd kiroku-bot
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+```
+
+Edit `.env`:
+
+- `DISCORD_TOKEN`
+- `ADMIN_CHANNEL_IDS`
+- `ALLOWED_USER_IDS`
+- `REPO_PATH`
+- `BASE_BRANCH`
+- `GIT_REMOTE`
+- `OPENAI_API_KEY` (required for `diff` and `run`)
+
+## Run
+
+```bash
+source venv/bin/activate
+python bot.py
+```
+
+## Commands
+
+Read commands:
+
+- `!kiroku help`
+- `!kiroku status`
+- `!kiroku repo`
+- `!kiroku tasks [all]`
+- `!kiroku show <id>`
+- `!kiroku preview <id>`
+
+Mutating commands (allowed users only):
+
+- `!kiroku task <title> || <instructions>`
+- `!kiroku plan <id>`
+- `!kiroku diff <id>`
+- `!kiroku apply <id>`
+- `!kiroku commit <id> [message]`
+- `!kiroku pr <id>`
+- `!kiroku run <id>`
+
+## Notes
+
+- `diff` and `run` require `OPENAI_API_KEY`.
+- `apply` can optionally run `VERIFY_COMMAND` from `.env`.
+- Compare URLs are generated from your git remote URL.
