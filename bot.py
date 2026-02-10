@@ -888,31 +888,44 @@ async def on_message(message: discord.Message) -> None:
     if not _is_admin_channel(message.channel.id):
         return
 
-    content = (message.content or "").strip()
-    if not content.lower().startswith(CONFIG.command_prefix.lower()):
+    # Support multiple commands in one message (one per line), e.g.:
+    #   !kiroku ping
+    #   !kiroku status
+    #   !kiroku outreach config
+    raw_content = message.content or ""
+    lines = [ln.strip() for ln in raw_content.splitlines() if ln.strip()]
+    commands: list[tuple[str, str]] = []
+    for ln in lines:
+        if not ln.lower().startswith(CONFIG.command_prefix.lower()):
+            continue
+        payload = ln[len(CONFIG.command_prefix) :].strip()
+        if not payload:
+            commands.append(("help", ""))
+            continue
+        parts = payload.split(None, 1)
+        command = parts[0]
+        args = parts[1] if len(parts) > 1 else ""
+        commands.append((command, args))
+
+    if not commands:
         return
 
-    payload = content[len(CONFIG.command_prefix) :].strip()
-    if not payload:
-        await _send_chunks(message.channel, f"Usage: {CONFIG.command_prefix} help")
-        return
-
-    command, _, args = payload.partition(" ")
-    try:
-        async with message.channel.typing():
-            await _dispatch_command(message, command, args)
-    except (CodeOpsError, OutreachOpsError) as exc:
-        msg = str(exc)
-        m = re.search(r"#(\d+)", f"{command} {args}")
-        if m and m.group(1).isdigit():
+    async with message.channel.typing():
+        for command, args in commands:
             try:
-                await ops.fail_task(int(m.group(1)), msg)
-            except Exception:
-                pass
-        await _send_chunks(message.channel, f"Command failed: {msg}")
-    except Exception as exc:
-        logger.exception("Unhandled command error")
-        await _send_chunks(message.channel, f"Unhandled error: {exc}")
+                await _dispatch_command(message, command, args)
+            except (CodeOpsError, OutreachOpsError) as exc:
+                msg = str(exc)
+                m = re.search(r"#(\d+)", f"{command} {args}")
+                if m and m.group(1).isdigit():
+                    try:
+                        await ops.fail_task(int(m.group(1)), msg)
+                    except Exception:
+                        pass
+                await _send_chunks(message.channel, f"Command failed: {msg}")
+            except Exception as exc:
+                logger.exception("Unhandled command error")
+                await _send_chunks(message.channel, f"Unhandled error: {exc}")
 
 
 async def post_weekly_update() -> None:
